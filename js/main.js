@@ -57,8 +57,8 @@ copyButton.addEventListener("click", function () {
 });
 
 function calculate(){
-  width = grid_size * (grid_y + 1);
-  height = grid_size * (grid_x + 1);
+  width = grid_size * (grid_y + 0.1);
+  height = grid_size * (grid_x + 0.1);
   mid_x = Math.floor(height / grid_size / 2) - 1;
   mid_y = Math.floor(width / grid_size / 2) - 1;
   canvas.width = width;
@@ -437,7 +437,7 @@ function draw() {
   ctx.fillRect(grid_y * grid_size, 0, grid_size, height);
   ctx.fillRect(0, grid_x * grid_size, width, grid_size);
   ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
-
+  lumberLabel.innerText = lumber;
 }
 
 const seed = {
