@@ -14,7 +14,8 @@ const widthField = document.getElementById('width');
 const lumberLabel = document.getElementById('lumber');
 const setButton = document.getElementById('set');
 const saveButton = document.getElementById('save');
-const saveCookieButton = document.getElementById('savecookie');
+//const saveCookieButton = document.getElementById('savecookie');
+//const deleteCookieButton = document.getElementById('deletecookie');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
 var lumber = 0;
@@ -55,9 +56,14 @@ saveButton.addEventListener("click", function () {
   saveUrl.value = "coledecarlo.github.io/webgame#" + game_str();
 });
 
+/*
 saveCookieButton.addEventListener("click", function () {
   setCookie('game', game_str(), 99999);
+  if(getCookie('game') == ''){
+    console.log("failed to set cookie");
+  }
 });
+ */
 
 copyButton.addEventListener("click", function () {
   saveUrl.select();
