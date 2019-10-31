@@ -59,8 +59,8 @@ copyButton.addEventListener("click", function () {
 function calculate(){
   width = grid_size * (grid_y + 0.1);
   height = grid_size * (grid_x + 0.1);
-  mid_x = Math.floor(height / grid_size / 2) - 1;
-  mid_y = Math.floor(width / grid_size / 2) - 1;
+  mid_x = Math.floor(grid_x / 2);
+  mid_y = Math.floor(grid_y / 2);
   canvas.width = width;
   canvas.height = height;
 }
@@ -372,7 +372,7 @@ function draw() {
       let y = j - mid_y + pos.y;
       let tile;
       try{
-        tile = map.tiles[x][y];
+        tile = map.tiles[Math.round(x)][Math.round(y)];
       }
       catch (e) {}
       if(tile == undefined){
@@ -422,7 +422,7 @@ function draw() {
       let y = j - mid_y + pos.y;
       let tile;
       try{
-        tile = map.tiles[x][y];
+        tile = map.tiles[Math.round(x)][Math.round(y)];
       }
       catch (e) {}
       if(tile == undefined){
