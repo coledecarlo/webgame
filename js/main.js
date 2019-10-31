@@ -14,6 +14,7 @@ const widthField = document.getElementById('width');
 const lumberLabel = document.getElementById('lumber');
 const setButton = document.getElementById('set');
 const saveButton = document.getElementById('save');
+const saveCookieButton = document.getElementById('savecookie');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
 var lumber = 0;
@@ -29,7 +30,7 @@ setButton.addEventListener("click", function () {
   draw();
 });
 
-saveButton.addEventListener("click", function () {
+function  game_str(){
   let s = '';
   s += int12_to_b64(Math.round(grid_x));
   s += int12_to_b64(Math.round(grid_y));
@@ -47,8 +48,15 @@ saveButton.addEventListener("click", function () {
   s += int12_to_b64(Math.round(pos.y));
   s += direction;
   s += int12_to_b64(Math.round(lumber));
-  let cs = compress_string(s);
-  saveUrl.value = "coledecarlo.github.io/webgame#" + cs;
+  return compress_string(s);
+}
+
+saveButton.addEventListener("click", function () {
+  saveUrl.value = "coledecarlo.github.io/webgame#" + game_str();
+});
+
+saveCookieButton.addEventListener("click", function () {
+  setCookie('game', game_str(), 99999);
 });
 
 copyButton.addEventListener("click", function () {
@@ -265,9 +273,19 @@ function board() {
   let init = false;
   let url = window.location.href;
   let poss = url.indexOf('#') + 1;
+  let s = '';
   if(poss > 0){
     init = true;
-    let s = decompress_string(url.substr(poss));
+    s = decompress_string(url.substr(poss));
+  }
+  else{
+    let cookie = getCookie('game');
+    if(cookie != ''){
+      init = true;
+      s = cookie;
+    }
+  }
+  if(init){
     let k = 0;
     grid_x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
@@ -708,5 +726,30 @@ function decompress_string(s){
   }
   return s;
 }
+
+function setCookie(cname, cvalue, exdays) {
+  var d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  var expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+
 
 
