@@ -53,7 +53,9 @@ function  game_str(){
 }
 
 saveButton.addEventListener("click", function () {
-  saveUrl.value = "coledecarlo.github.io/webgame#" + game_str();
+  let gs = game_str();
+  saveUrl.value = "coledecarlo.github.io/webgame#" + gs;
+  window.location = "#" + gs;
 });
 
 /*
