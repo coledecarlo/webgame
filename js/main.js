@@ -1,8 +1,8 @@
 var pos;
 var map;
 const grid_size = 60;
-var grid_x = 15;
-var grid_y = 15;
+var grid_x = 13;
+var grid_y = 23;
 var width;
 var height;
 var mid_x;
@@ -48,7 +48,7 @@ saveButton.addEventListener("click", function () {
   s += direction;
   s += int12_to_b64(Math.round(lumber));
   let cs = compress_string(s);
-  saveUrl.value = "coledecarlo.github.io/#" + cs;
+  saveUrl.value = "coledecarlo.github.io/webgame#" + cs;
 });
 
 copyButton.addEventListener("click", function () {
