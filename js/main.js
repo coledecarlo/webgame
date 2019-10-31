@@ -350,12 +350,12 @@ function board() {
 function drawLines(){
   for (let i = -(pos.y % 1) * grid_size; i < width; i += grid_size) {
     ctx.moveTo(i + 0.5, 0.5);
-    ctx.lineTo(i + 0.5, height - grid_size + 0.5);
+    ctx.lineTo(i + 0.5, height - grid_size * 0.1 + 0.5);
     ctx.stroke();
   }
   for (let i = -(pos.x % 1) * grid_size; i < height; i += grid_size) {
     ctx.moveTo(0.5, i + 0.5);
-    ctx.lineTo(width - grid_size + 0.5, i + 0.5);
+    ctx.lineTo(width - grid_size * 0.1 + 0.5, i + 0.5);
     ctx.stroke();
   }
 }
