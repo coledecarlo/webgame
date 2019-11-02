@@ -1,3 +1,4 @@
+const version = 2;
 var pos;
 var map;
 const grid_size = 60;
@@ -587,6 +588,13 @@ function validatePos(newPos){
 
 
 function board() {
+  let htmlversion = document.getElementById('version');
+  if(parseInt(htmlversion.innerText) != version){
+    htmlversion.innerText = 'Version error! Clear browser cache.';
+  }
+  else{
+    htmlversion.remove();
+  }
   let init = false;
   let url = window.location.href;
   let poss = url.indexOf('#') + 1;
