@@ -1,4 +1,4 @@
-const version = 3;
+const version = 4;
 var pos;
 var map;
 const grid_size = 60;
@@ -398,16 +398,16 @@ document.addEventListener("keydown", async function onEvent(event) {
     default:
       console.log(event.key);
   }
-  if(moving){
-    return;
-  }
+
   keydown.set(direction, true);
   await sleep(80);
   if(!keydown.get(direction)){
     draw();
     return;
   }
-
+  if(moving){
+    return;
+  }
   moving = true;
   do {
     let newPos = {
@@ -536,7 +536,7 @@ document.addEventListener("keydown", async function onEvent(event) {
       }
       pos.x = Math.round(pos.x);
       pos.y = Math.round(pos.y);
-      map.time = Math.round(map.time);
+      map.time = Math.round(map.time) % 4096;
     }
     else{
       draw();
