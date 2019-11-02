@@ -1,7 +1,7 @@
-const version = 4;
+const version = 5;
 var pos;
 var map;
-const grid_size = 60;
+var grid_size = 60;
 var grid_x = 13;
 var grid_y = 23;
 var width;
@@ -12,6 +12,7 @@ const canvas = document.getElementById('board');
 const showLines = document.getElementById('lines');
 const heightField = document.getElementById('height');
 const widthField = document.getElementById('width');
+const gridField = document.getElementById('gridsize');
 const lumberLabel = document.getElementById('lumber');
 const rocksLabel = document.getElementById('rocks');
 const setButton = document.getElementById('set');
@@ -30,6 +31,7 @@ var moving = false;
 setButton.addEventListener("click", function () {
   grid_x = parseInt(heightField.value);
   grid_y = parseInt(widthField.value);
+  grid_size = parseInt(gridField.value);
   lines = showLines.checked;
   calculate();
   draw();
@@ -55,6 +57,7 @@ function  game_str(){
   s += int12_to_b64(Math.round(lumber));
   s += int12_to_b64(Math.round(map.time));
   s += int12_to_b64(Math.round(rocks));
+  s += int12_to_b64(Math.round(grid_size));
   return compress_string(s);
 }
 
@@ -349,7 +352,9 @@ function rock_wash(i, dir) {
 
 var keydown = new Map();
 
-document.addEventListener("keyup", async function onEvent(event){
+
+document.addEventListener("keyup", onKeyup);
+async function onKeyup(event){
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -368,9 +373,10 @@ document.addEventListener("keyup", async function onEvent(event){
       keydown.set('l', false);
       break;
   }
-});
+};
 
-document.addEventListener("keydown", async function onEvent(event) {
+document.addEventListener("keydown", onKeydown);
+async function onKeydown(event) {
 
 
   switch (event.key) {
@@ -546,7 +552,7 @@ document.addEventListener("keydown", async function onEvent(event) {
   }
   while(keydown.get(direction));
   moving = false;
-});
+};
 
 function fillTileColor(x, y, color) {
   ctx.fillStyle = color;
@@ -651,11 +657,24 @@ function board() {
       map.time = b642_to_int12(s.substr(k, k + 2));
       k += 2;
       rocks = b642_to_int12(s.substr(k, k + 2));
+      k += 2;
     }
     else{
       map.time = 0;
       rocks = 0;
     }
+    if(k < s.length){
+      grid_size = b642_to_int12(s.substr(k, k + 2));
+      k += 2;
+    }
+    else{
+      grid_size = 60;
+    }
+  }
+  if(detectmob()){
+    grid_x = 15;
+    grid_y = 11;
+    grid_size = 30;
   }
 
   calculate();
@@ -663,6 +682,7 @@ function board() {
   //console.assert((height / grid_size) % 2 == 0);
   heightField.value = grid_x;
   widthField.value = grid_y;
+  gridField.value = grid_size;
 
   if (canvas.getContext) {
     ctx = canvas.getContext('2d');
@@ -1109,5 +1129,72 @@ function getCookie(cname) {
 }
 
 
+async function simulateKeypress(a){
+  onKeydown({
+    key: a
+  });
+  await sleep(90);
+  onKeyup({
+    key: a
+  });
+}
+
+canvas.addEventListener('click', function(event){
+  simulateKeypress(' ');
+});
+
+function detectmob() {
+  if(window.innerWidth <= 600) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 
+//https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android
+document.addEventListener('touchstart', handleTouchStart, false);
+document.addEventListener('touchmove', handleTouchMove, false);
+
+var xDown = null;
+var yDown = null;
+
+function getTouches(evt) {
+  return evt.touches ||             // browser API
+    evt.originalEvent.touches; // jQuery
+}
+
+function handleTouchStart(evt) {
+  const firstTouch = getTouches(evt)[0];
+  xDown = firstTouch.clientX;
+  yDown = firstTouch.clientY;
+};
+
+function handleTouchMove(evt) {
+  if ( ! xDown || ! yDown ) {
+    return;
+  }
+
+  var xUp = evt.touches[0].clientX;
+  var yUp = evt.touches[0].clientY;
+
+  var xDiff = xDown - xUp;
+  var yDiff = yDown - yUp;
+
+  if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
+    if ( xDiff > 0 ) {
+      simulateKeypress('a');
+    } else {
+      simulateKeypress('d');
+    }
+  } else {
+    if ( yDiff > 0 ) {
+      simulateKeypress('w');
+    } else {
+      simulateKeypress('s');
+    }
+  }
+  /* reset values */
+  xDown = null;
+  yDown = null;
+};
