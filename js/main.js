@@ -1,4 +1,4 @@
-const version = 6;
+const version = 7;
 var pos;
 var map;
 var grid_size = 60;
@@ -112,7 +112,7 @@ function drawLeaves(x, y, obj){
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i -= 0.1) {
-    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (detectmob()? (1.1 - i): 1) + ')';
+    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (!detectmob()? (1.1 - i): 1) + ')';
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
@@ -1163,6 +1163,7 @@ $(document).on('touchstart', function(e) {
 
 
 //https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android
+/*
 document.addEventListener('touchstart', handleTouchStart, false);
 document.addEventListener('touchmove', handleTouchMove, false);
 
@@ -1195,7 +1196,7 @@ function handleTouchMove(evt) {
   var xDiff = xDown - xUp;
   var yDiff = yDown - yUp;
 
-  if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
+  if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {//most significant
     if ( xDiff > 0 ) {
       simulateKeypress('a');
     } else {
@@ -1208,7 +1209,7 @@ function handleTouchMove(evt) {
       simulateKeypress('s');
     }
   }
-  /* reset values */
+  // reset values
   xDown = null;
   yDown = null;
-};
+};*/
