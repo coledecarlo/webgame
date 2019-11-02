@@ -1,4 +1,4 @@
-const version = 5;
+const version = 6;
 var pos;
 var map;
 var grid_size = 60;
@@ -112,7 +112,7 @@ function drawLeaves(x, y, obj){
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i -= 0.1) {
-    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
+    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (detectmob()? (1.1 - i): 1) + ')';
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
