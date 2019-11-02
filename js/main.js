@@ -12,6 +12,7 @@ const showLines = document.getElementById('lines');
 const heightField = document.getElementById('height');
 const widthField = document.getElementById('width');
 const lumberLabel = document.getElementById('lumber');
+const rocksLabel = document.getElementById('rocks');
 const setButton = document.getElementById('set');
 const saveButton = document.getElementById('save');
 //const saveCookieButton = document.getElementById('savecookie');
@@ -19,9 +20,11 @@ const saveButton = document.getElementById('save');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
 var lumber = 0;
+var rocks = 0;
 var lines = false;
 var direction = 'u';
 var ctx;
+var moving = false;
 
 setButton.addEventListener("click", function () {
   grid_x = parseInt(heightField.value);
@@ -49,6 +52,8 @@ function  game_str(){
   s += int12_to_b64(Math.round(pos.y));
   s += direction;
   s += int12_to_b64(Math.round(lumber));
+  s += int12_to_b64(Math.round(map.time));
+  s += int12_to_b64(Math.round(rocks));
   return compress_string(s);
 }
 
@@ -81,51 +86,154 @@ function calculate(){
   canvas.height = height;
 }
 
-const tree = {
-  draw: (x, y) => {
-    ctx.fillStyle = 'brown';
-
-    x *= grid_size;
-    y *= grid_size;
-    ctx.fillRect(y + 0.3 * grid_size, x + 0.3 * grid_size, 0.35 * grid_size, 0.7 * grid_size);
-    for(let i = 0.6; i > 0; i -= 0.1) {
-      ctx.fillStyle = 'rgba(0, ' + 255 * (1 - i) + ', 0, ' + (1.1 - i) + ')';
-      ctx.beginPath();
-      ctx.arc(y + 0.5 * grid_size,
-        x + 0.15 * grid_size,
-        grid_size * i,
-        0,
-        2 * Math.PI
-      );
-      ctx.fill();
-    }
-
-
+function parse_color(cs){
+  let can = document.createElement("canvas");
+  can.height = 1;
+  can.width = 1;
+  let con = can.getContext('2d');
+  con.fillStyle = cs;
+  con.fillRect(0, 0, 1, 1);
+  let img = con.getImageData(0, 0, 1, 1);
+  can.remove();
+  return {
+    r: img.data[0],
+    g: img.data[1],
+    b: img.data[2],
+    a: img.data[3]
   }
 }
 
-const big_tree = {
-  draw: (x, y) => {
-    ctx.fillStyle = 'brown';
 
-    x *= grid_size;
-    y *= grid_size;
-    ctx.fillRect(y + 0.2 * grid_size, x - 0.2 * grid_size, 0.6 * grid_size, 1.2 * grid_size);
-    for(let i = 0.9; i > 0; i -= 0.1) {
-      ctx.fillStyle = 'rgba(0, ' + 255 * (1 - i) + ', 0, ' + (1.1 - i) + ')';
-      ctx.beginPath();
-      ctx.arc(y + 0.5 * grid_size,
-        x - 0.2 * grid_size,
-        grid_size * i,
-        0,
-        2 * Math.PI
-      );
-      ctx.fill();
-    }
-
-
+function drawLeaves(x, y, obj){
+  x *= grid_size;
+  y *= grid_size;
+  for(let i = obj.width; i > 0; i -= 0.1) {
+    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
+    ctx.beginPath();
+    ctx.arc(y + 0.5 * grid_size,
+      x + (1 - obj.height) * grid_size,
+      grid_size * i,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
   }
 }
+function drawTrunk(x, y, obj){
+  x *= grid_size;
+  y *= grid_size;
+  ctx.fillStyle = 'rgba(' + obj.color.r + ',' + obj.color.g + ',' + obj.color.b + ',' + obj.color.a + ')';
+  ctx.fillRect(y + (1 - obj.width) / 2 * grid_size, x + (1 - obj.height) * grid_size, obj.width * grid_size, obj.height * grid_size);
+}
+
+function color_grad(c1, c2, i){
+  return {
+    r: c1.r + i * (c2.r - c1.r),
+    g: c1.g + i * (c2.g - c1.g),
+    b: c1.b + i * (c2.b - c1.b),
+    a: c1.a + i * (c2.a - c1.a)
+  };
+}
+
+function trunk_grad(t1, t2, i){
+  let ret = {
+    width:  t1.width  + i * (t2.width  - t1.width ),
+    height: t1.height + i * (t2.height - t1.height),
+    color:  color_grad(t1.color, t2.color, i),
+    draw: (x, y) => {
+      drawTrunk(x, y, ret);
+    },
+    priority: 1
+  };
+  return ret;
+}
+function leaves_grad(t1, t2, i){
+  let ret = {
+    width:  t1.width  + i * (t2.width  - t1.width ),
+    height: t1.height + i * (t2.height - t1.height),
+    color:  color_grad(t1.color, t2.color, i),
+    draw: (x, y) => {
+      drawLeaves(x, y, ret);
+    },
+    priority: 2
+  };
+  return ret;
+}
+
+
+const leaves = {
+  width:   0.6,
+  height:  0.85,
+  color: {
+    r: 0,
+    g: 255,
+    b: 0,
+    a: 255
+  },
+  draw: (x, y) => {
+    drawLeaves(x, y, leaves);
+  },
+  priority: 2
+};
+const trunk = {
+  width:  0.35,
+  height: 0.85,
+  color:  parse_color('brown'),
+  draw: (x, y) => {
+    drawTrunk(x, y, trunk);
+  },
+  priority: 1
+};
+const big_leaves = {
+  width:   0.9,
+  height:  1.2,
+  color: {
+    r: 0,
+    g: 255,
+    b: 0,
+    a: 255
+  },
+  draw: (x, y) => {
+    drawLeaves(x, y, big_leaves);
+  },
+  priority: 3
+};
+const big_trunk = {
+  width:  0.6,
+  height: 1.2,
+  color:  parse_color('brown'),
+  draw: (x, y) => {
+    drawTrunk(x, y, big_trunk);
+  },
+  priority: 1
+};
+const null_leaves = {
+  width:   0,
+  height:  0,
+  color: {
+    r: 0,
+    g: 255,
+    b: 0,
+    a: 255
+  },
+  draw: (x, y) => {
+    drawLeaves(x, y, null_leaves);
+  },
+  priority: -1
+};
+const null_trunk = {
+  width:  0,
+  height: 0,
+  color:  parse_color('brown'),
+  draw: (x, y) => {
+    drawTrunk(x, y, null_trunk);
+  },
+  priority: -1
+};
+const rock = rock_wash(1, {
+  x: 0,
+  y: 1
+});
 
 const blank = {
   color: '#000000',
@@ -161,13 +269,25 @@ const grass_tree = {
   color: grass.color,
   land: false,
   id: 'grass_tree',
-  deco: [tree]
-}
+  deco: [trunk, leaves]
+};
 const grass_big_tree = {
   color: grass.color,
   land: false,
   id: 'grass_big_tree',
-  deco: [big_tree]
+  deco: [big_trunk, big_leaves]
+};
+const grass_rock = {
+  color: grass.color,
+  land: false,
+  id: 'grass_rock',
+  deco: [rock]
+};
+const sand_rock = {
+  color: sand.color,
+  land: false,
+  id: 'sand_rock',
+  deco: [rock]
 }
 const tile_ref = [
   blank,
@@ -176,7 +296,9 @@ const tile_ref = [
   sand,
   bridge,
   grass_tree,
-  grass_big_tree
+  grass_big_tree,
+  sand_rock,
+  grass_rock
 ];
 for(let i = 0; i < tile_ref.length; i++){
   tile_ref[i].int_id = i;
@@ -189,53 +311,240 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-document.addEventListener("keydown", async function onEvent(event) {
-  let newPos = {
-    x: pos.x,
-    y: pos.y
+function mutated_tile(tile) {
+  return {
+    color: tile.color,
+    land: tile.land,
+    id: 'mutated_' + tile.id,
+    deco: []
   };
+}
+
+function rock_wash(i, dir) {
+  return {
+    draw: (x, y) => {
+      let j = [];
+      if(i < 1 / 3){
+        j = [3 * i, 0, 0];
+      }
+      else if(i < 2 / 3){
+        j = [1, 3 * i - 1, 0];
+      }
+      else{
+        j = [1, 1, 3 * i - 2];
+      }
+      x *= grid_size;
+      y *= grid_size;
+      ctx.fillStyle = '#C0C0C0';
+      ctx.fillRect(y + (0.1 + (1 - j[0]) * dir.y) * grid_size, x + (0.1 + (1 - j[0]) * dir.x) * grid_size, 0.6 * grid_size, 0.6 * grid_size);
+      ctx.fillStyle = '#707070';
+      ctx.fillRect(y + (0.4 + (1 - j[1]) * dir.y) * grid_size, x + (0.3 + (1 - j[1]) * dir.x) * grid_size, 0.5 * grid_size, 0.5 * grid_size);
+      ctx.fillStyle = '#909090';
+      ctx.fillRect(y + (0.3 + (1 - j[2]) * dir.y) * grid_size, x + (0.6 + (1 - j[2]) * dir.x) * grid_size, 0.3 * grid_size, 0.3 * grid_size);
+    },
+    priority: -1
+  };
+}
+
+var keydown = new Map();
+
+document.addEventListener("keyup", async function onEvent(event){
   switch (event.key) {
     case "ArrowDown":
     case "s":
-      newPos.x++;
+      keydown.set('d', false);
+      break;
+    case "ArrowRight":
+    case "d":
+      keydown.set('r', false);
+      break;
+    case "ArrowUp":
+    case "w":
+      keydown.set('u', false);
+      break;
+    case "ArrowLeft":
+    case "a":
+      keydown.set('l', false);
+      break;
+  }
+});
+
+document.addEventListener("keydown", async function onEvent(event) {
+
+
+  switch (event.key) {
+    case "ArrowDown":
+    case "s":
       direction = 'd';
       break;
     case "ArrowRight":
     case "d":
-      newPos.y++;
       direction = 'r';
       break;
     case "ArrowUp":
     case "w":
-      newPos.x--;
       direction = 'u';
       break;
     case "ArrowLeft":
     case "a":
-      newPos.y--;
       direction = 'l';
       break;
     case " ":
-      action();
+      if(!moving){
+        action();
+      }
       return;
     default:
       console.log(event.key);
   }
-  if(validatePos(newPos) == true){
-    let d = {
-      x: newPos.x - pos.x,
-      y: newPos.y - pos.y,
-      z: 0.1
-    }
-    for(let i = 0; i < 0.9; i += d.z){
-      pos.x += d.x * d.z;
-      pos.y += d.y * d.z;
-      draw();
-      await sleep(20);
-    }
-    pos = newPos;
+  if(moving){
+    return;
   }
-  draw();
+  keydown.set(direction, true);
+  await sleep(80);
+  if(!keydown.get(direction)){
+    draw();
+    return;
+  }
+
+  moving = true;
+  do {
+    let newPos = {
+      x: pos.x,
+      y: pos.y
+    };
+    switch (direction) {
+      case "u":
+        newPos.x--;
+        break;
+      case "d":
+        newPos.x++;
+        break;
+      case "l":
+        newPos.y--;
+        break;
+      case "r":
+        newPos.y++;
+        break;
+    }
+    if (validatePos(newPos) == true) {
+      let newTrees = [];
+      let newRocks = [];
+      let growTrees = [];
+      let prox = 10;
+      for (let i = Math.round(Math.max(0, pos.x - prox)); i < Math.min(map.tiles.length, pos.x + prox); i++) {
+        for (let j = Math.round(Math.max(0, pos.y - prox)); j < Math.min(map.tiles[0].length, pos.y + prox); j++) {
+          let adjacent = 0;
+          if (map.tiles[i][j].id == 'grass' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
+            for (let x = i - 1; x <= i + 1; x++) {
+              for (let y = j - 1; y <= j + 1; y++) {
+                if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+                  if (map.tiles[x][y].id == 'grass_tree') {
+                    adjacent++;
+                  }
+                  if (map.tiles[x][y].id == 'grass_big_tree') {
+                    adjacent += 5;
+                  }
+                }
+              }
+            }
+          }
+          if (Math.random() < (adjacent * 0.0005)) {
+            newTrees[newTrees.length] = {
+              i: i,
+              j: j
+            }
+          }
+          adjacent = 0;
+          let dir = {
+            x: 0,
+            y: 0
+          };
+          if (map.tiles[i][j].id == 'sand' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
+            for (let x = i - 1; x <= i + 1; x++) {
+              for (let y = j - 1; y <= j + 1; y++) {
+                if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+                  if (map.tiles[x][y].id == 'water') {
+                    if ((x - i + y - j) % 2 != 0) {
+                      adjacent++;
+                      dir.x = x - i;
+                      dir.y = y - j;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (Math.random() < (adjacent * 0.001)) {
+            newRocks[newRocks.length] = {
+              i: i,
+              j: j,
+              dir: dir
+            }
+          }
+          if (map.tiles[i][j].id == 'grass_tree' && Math.random() < 0.0001) {
+            growTrees[growTrees.length] = {
+              i: i,
+              j: j
+            }
+          }
+        }
+      }
+      let d = {
+        x: newPos.x - pos.x,
+        y: newPos.y - pos.y,
+      }
+      let steps = 10;
+      for (let i = 0; i < 1; i = Math.round(steps * i + 1) / steps) {
+        await sleep(20);
+        map.time += 1 / 10;
+        pos.x += d.x / steps;
+        pos.y += d.y / steps;
+        let newTree = mutated_tile(grass_tree);
+        newTree.deco[0] = trunk_grad(null_trunk, trunk, i);
+        newTree.deco[1] = leaves_grad(null_leaves, leaves, i);
+        let growTree = mutated_tile(grass_tree);
+        growTree.deco[0] = trunk_grad(trunk, big_trunk, i);
+        growTree.deco[1] = leaves_grad(leaves, big_leaves, i);
+        for (let j = 0; j < newTrees.length; j++) {
+          let ind = newTrees[j];
+          map.tiles[ind.i][ind.j] = newTree;
+        }
+        for (let j = 0; j < growTrees.length; j++) {
+          let ind = growTrees[j];
+          map.tiles[ind.i][ind.j] = growTree;
+        }
+        for (let j = 0; j < newRocks.length; j++) {
+          let ind = newRocks[j];
+          map.tiles[ind.i][ind.j] = mutated_tile(sand);
+          map.tiles[ind.i][ind.j].deco[0] = rock_wash(i, ind.dir);
+        }
+        draw();
+      }
+      for (let j = 0; j < newTrees.length; j++) {
+        let ind = newTrees[j];
+        map.tiles[ind.i][ind.j] = grass_tree;
+      }
+      for (let j = 0; j < newRocks.length; j++) {
+        let ind = newRocks[j];
+        map.tiles[ind.i][ind.j] = sand_rock;
+      }
+      for (let j = 0; j < growTrees.length; j++) {
+        let ind = growTrees[j];
+        map.tiles[ind.i][ind.j] = grass_big_tree;
+      }
+      pos.x = Math.round(pos.x);
+      pos.y = Math.round(pos.y);
+      map.time = Math.round(map.time);
+    }
+    else{
+      draw();
+      break;
+    }
+    draw();
+  }
+  while(keydown.get(direction));
+  moving = false;
 });
 
 function fillTileColor(x, y, color) {
@@ -270,7 +579,7 @@ function validatePos(newPos){
   ) {
     return false;
   }
-  if(!map.tiles[newPos.x][newPos.y].land){
+  if(!map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land){
     return false;
   }
   return true;
@@ -290,7 +599,7 @@ function board() {
     let cookie = getCookie('game');
     if(cookie != ''){
       init = true;
-      s = cookie;
+      s = decompress_string(cookie);
     }
   }
   if(init){
@@ -329,36 +638,27 @@ function board() {
     direction = s[k];
     k += 1;
     lumber = b642_to_int12(s.substr(k, k + 2));
-
+    k += 2;
+    if(k < s.length){
+      map.time = b642_to_int12(s.substr(k, k + 2));
+      k += 2;
+      rocks = b642_to_int12(s.substr(k, k + 2));
+    }
+    else{
+      map.time = 0;
+      rocks = 0;
+    }
   }
 
-  calculate()
-  console.assert((width / grid_size) % 2 == 0);
-  console.assert((height / grid_size) % 2 == 0);
+  calculate();
+  //console.assert((width / grid_size) % 2 == 0);
+  //console.assert((height / grid_size) % 2 == 0);
   heightField.value = grid_x;
   widthField.value = grid_y;
 
   if (canvas.getContext) {
     ctx = canvas.getContext('2d');
 
-
-
-    const map1 = {
-      tiles: [
-        [g, g, g, s, w, w, w, w],
-        [g, g, g, s, w, w, w, w],
-        [g, g, g, s, s, w, w, w],
-        [g, g, g, s, w, s, w, w],
-        [g, g, g, s, s, s, w, w],
-        [g, g, g, s, s, s, w, w],
-        [g, g, g, g, g, s, s, w],
-        [g, g, g, g, g, w, s, w],
-      ],
-      start: {
-        x: 1,
-        y: 1
-      }
-    };
     if(!init) {
       map = generateMap(100, 100);
       pos = map.start;
@@ -397,14 +697,31 @@ function draw() {
       let x = i - mid_x + pos.x;
       let y = j - mid_y + pos.y;
       let tile;
-      try{
+      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
         tile = map.tiles[Math.round(x)][Math.round(y)];
       }
-      catch (e) {}
       if(tile == undefined){
         tile = blank;
       }
       fillTile(i, j, tile);
+    }
+  }
+  for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
+    for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
+      let x = i - mid_x + pos.x;
+      let y = j - mid_y + pos.y;
+      let tile;
+      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
+        tile = map.tiles[Math.round(x)][Math.round(y)];
+      }
+      if(tile == undefined){
+        tile = blank;
+      }
+      for(let k = 0; k < tile.deco.length; k++){
+        if(tile.deco[k].priority == -1) {
+          tile.deco[k].draw(i, j);
+        }
+      }
     }
   }
   ctx.fillStyle = 'rgba(0, 0, 0, 1)';
@@ -442,20 +759,23 @@ function draw() {
     2 * Math.PI
   );
   ctx.fill();
-  for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
-    for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
-      let x = i - mid_x + pos.x;
-      let y = j - mid_y + pos.y;
-      let tile;
-      try{
-        tile = map.tiles[Math.round(x)][Math.round(y)];
-      }
-      catch (e) {}
-      if(tile == undefined){
-        tile = blank;
-      }
-      for(let k = 0; k < tile.deco.length; k++){
-        tile.deco[k].draw(i, j);
+  for(let p = 1; p <= 3; p++) {
+    for (let i = -(pos.x % 1) - 1; i < grid_x + 1; i++) {
+      for (let j = -(pos.y % 1) - 1; j < grid_y + 1; j++) {
+        let x = i - mid_x + pos.x;
+        let y = j - mid_y + pos.y;
+        let tile;
+        if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+          tile = map.tiles[Math.round(x)][Math.round(y)];
+        }
+        if (tile == undefined) {
+          tile = blank;
+        }
+        for (let k = 0; k < tile.deco.length; k++) {
+          if (tile.deco[k].priority == p) {
+            tile.deco[k].draw(i, j);
+          }
+        }
       }
     }
   }
@@ -464,6 +784,7 @@ function draw() {
   ctx.fillRect(0, grid_x * grid_size, width, grid_size);
   ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
   lumberLabel.innerText = lumber;
+  rocksLabel.innerText = rocks;
 }
 
 const seed = {
@@ -564,6 +885,7 @@ function generateMap(h, w){
     }
   }
   newMap.start = grasses[Math.floor(Math.random() * grasses.length)];
+  newMap.time = 0;
   return newMap;
 }
 
@@ -617,8 +939,28 @@ function action(){
         map.tiles[targetPos.x][targetPos.y] = bridge;
         lumber--;
       }
+      break;
+    case 'grass_rock':
+      map.tiles[targetPos.x][targetPos.y] = grass;
+      rocks++;
+      break;
+    case 'sand_rock':
+      map.tiles[targetPos.x][targetPos.y] = sand;
+      rocks++;
+      break;
+    case 'grass':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = grass_rock;
+        rocks--;
+      }
+      break;
+    case 'sand':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = sand_rock;
+        rocks--;
+      }
+      break;
   }
-  lumberLabel.innerText = lumber;
   draw();
 }
 
