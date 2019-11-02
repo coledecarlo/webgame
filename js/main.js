@@ -1151,6 +1151,16 @@ function detectmob() {
   }
 }
 
+$(document).on('touchmove', function(e) {
+  e.preventDefault();
+});
+
+$(document).on('touchstart', function(e) {
+  if (e.target.nodeName !== 'INPUT') {
+    e.preventDefault();
+  }
+});
+
 
 //https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android
 document.addEventListener('touchstart', handleTouchStart, false);
@@ -1165,12 +1175,16 @@ function getTouches(evt) {
 }
 
 function handleTouchStart(evt) {
+  if (evt.target.nodeName !== 'INPUT') {
+    //evt.preventDefault();
+  }
   const firstTouch = getTouches(evt)[0];
   xDown = firstTouch.clientX;
   yDown = firstTouch.clientY;
 };
 
 function handleTouchMove(evt) {
+  //evt.preventDefault();
   if ( ! xDown || ! yDown ) {
     return;
   }
