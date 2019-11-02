@@ -694,11 +694,11 @@ function draw() {
   }
   for(let i = -(pos.x % 1); i < grid_x; i++){
     for(let j = -(pos.y % 1); j < grid_y; j++){
-      let x = i - mid_x + pos.x;
-      let y = j - mid_y + pos.y;
+      let x = Math.round(i - mid_x + pos.x);
+      let y = Math.round(j - mid_y + pos.y);
       let tile;
       if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[Math.round(x)][Math.round(y)];
+        tile = map.tiles[x][y];
       }
       if(tile == undefined){
         tile = blank;
@@ -708,11 +708,11 @@ function draw() {
   }
   for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
     for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
-      let x = i - mid_x + pos.x;
-      let y = j - mid_y + pos.y;
+      let x = Math.round(i - mid_x + pos.x);
+      let y = Math.round(j - mid_y + pos.y);
       let tile;
       if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[Math.round(x)][Math.round(y)];
+        tile = map.tiles[x][y];
       }
       if(tile == undefined){
         tile = blank;
@@ -762,11 +762,11 @@ function draw() {
   for(let p = 1; p <= 3; p++) {
     for (let i = -(pos.x % 1) - 1; i < grid_x + 1; i++) {
       for (let j = -(pos.y % 1) - 1; j < grid_y + 1; j++) {
-        let x = i - mid_x + pos.x;
-        let y = j - mid_y + pos.y;
+        let x = Math.round(i - mid_x + pos.x);
+        let y = Math.round(j - mid_y + pos.y);
         let tile;
         if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
-          tile = map.tiles[Math.round(x)][Math.round(y)];
+          tile = map.tiles[x][y];
         }
         if (tile == undefined) {
           tile = blank;
