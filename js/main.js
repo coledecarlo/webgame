@@ -116,7 +116,6 @@ function parse_color(cs){
   }
 }
 
-lastfill = ''
 
 function drawLeaves(x, y, obj){
   x *= grid_size;
@@ -580,8 +579,8 @@ function fillTileColor(x, y, color) {
     ctx.fillRect(
       y * grid_size,
       x * grid_size,
-      grid_size,
-      grid_size
+      grid_size + (0.5),
+      grid_size + (0.5),
     );
   }
 }
@@ -691,6 +690,7 @@ function board() {
     document.getElementById('dofoot').remove();
     canvas.setAttribute('style', 'right: 0%; position: relative; touch-action: none !important;');
     grid_size = Math.ceil(window.innerWidth / grid_y);
+    grid_x = Math.floor((window.innerHeight - 128) / grid_size);
   }
 
   calculate();
