@@ -66,6 +66,10 @@ function page_log(s){
   logField.innerText =  logField.innerText + s;
 }
 
+function page_log_clear(){
+  logField.innerText =  '';
+}
+
 saveButton.addEventListener("click", function () {
   let gs = game_str();
   saveUrl.value = "coledecarlo.github.io/webgame#" + gs;
@@ -114,11 +118,13 @@ function parse_color(cs){
 
 
 function drawLeaves(x, y, obj){
+  page_log_clear();
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
-    page_log("" + i + " ");
-    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (!detectmob()? (1.1 - i): 1) + ')';
+    page_log("|" + i + ":");
+    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
+    page_log("" + ctx.fillStyle + "");
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
