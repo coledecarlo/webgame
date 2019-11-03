@@ -1,13 +1,15 @@
-const version = 12;
-var pos;
-var map;
-var grid_size = 60;
-var grid_x = 13;
-var grid_y = 23;
-var width;
-var height;
-var mid_x;
-var mid_y;
+const version = 13;
+
+
+let pos = new Point();
+let map = new TileMap();
+let grid_size = 60;
+let grid_x = 13;
+let grid_y = 23;
+let width = new Number();
+let height;
+let mid_x;
+let mid_y;
 const canvas = document.getElementById('board');
 const showLines = document.getElementById('lines');
 const heightField = document.getElementById('height');
@@ -22,12 +24,12 @@ const saveButton = document.getElementById('save');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
 const logField = document.getElementById('log');
-var lumber = 0;
-var rocks = 0;
-var lines = false;
-var direction = 'u';
-var ctx;
-var moving = false;
+let lumber = 0;
+let rocks = 0;
+let lines = false;
+let direction = 'u';
+let ctx;
+let moving = false;
 
 setButton.addEventListener("click", function () {
   grid_x = parseInt(heightField.value);
@@ -37,6 +39,10 @@ setButton.addEventListener("click", function () {
   calculate();
   draw();
 });
+
+function color_to_string(/*Color*/ color){
+  return `rgba(${color.r},${color.g},${color.b},${color.a})`;
+}
 
 function  game_str(){
   let s = '';
@@ -62,7 +68,7 @@ function  game_str(){
   return compress_string(s);
 }
 
-function page_log(s){
+function page_log(/*String*/ s){
   logField.innerHTML =  logField.innerHTML + s;
 }
 
@@ -99,234 +105,17 @@ function calculate(){
   canvas.height = height;
 }
 
-function parse_color(cs){
-  let can = document.createElement("canvas");
-  can.height = 1;
-  can.width = 1;
-  let con = can.getContext('2d');
-  con.fillStyle = cs;
-  con.fillRect(0, 0, 1, 1);
-  let img = con.getImageData(0, 0, 1, 1);
-  can.remove();
-  return {
-    r: img.data[0],
-    g: img.data[1],
-    b: img.data[2],
-    a: img.data[3]
-  }
-}
 
 
-function drawLeaves(x, y, obj){
-  x *= grid_size;
-  y *= grid_size;
-  for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
-    let s = 'rgba(' + Math.round(obj.color.r * (1 - i)) + ',' + Math.round(obj.color.g * (1 - i)) + ',' + Math.round(obj.color.b * (1 - i)) + ',' + String(1.1 - i).substr(0, 5) + ')';
-    ctx.fillStyle = 'white';
-    ctx.fillStyle = s;
-    ctx.beginPath();
-    ctx.arc(y + 0.5 * grid_size,
-      x + (1 - obj.height) * grid_size,
-      grid_size * i,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-  }
-}
-function drawTrunk(x, y, obj){
-  x *= grid_size;
-  y *= grid_size;
-  ctx.fillStyle = 'rgba(' + obj.color.r + ',' + obj.color.g + ',' + obj.color.b + ',' + obj.color.a + ')';
-  ctx.fillRect(y + (1 - obj.width) / 2 * grid_size, x + (1 - obj.height) * grid_size, obj.width * grid_size, obj.height * grid_size);
-}
-
-function color_grad(c1, c2, i){
-  return {
-    r: c1.r + i * (c2.r - c1.r),
-    g: c1.g + i * (c2.g - c1.g),
-    b: c1.b + i * (c2.b - c1.b),
-    a: c1.a + i * (c2.a - c1.a)
-  };
-}
-
-function trunk_grad(t1, t2, i){
-  let ret = {
-    width:  t1.width  + i * (t2.width  - t1.width ),
-    height: t1.height + i * (t2.height - t1.height),
-    color:  color_grad(t1.color, t2.color, i),
-    draw: (x, y) => {
-      drawTrunk(x, y, ret);
-    },
-    priority: 1
-  };
-  return ret;
-}
-function leaves_grad(t1, t2, i){
-  let ret = {
-    width:  t1.width  + i * (t2.width  - t1.width ),
-    height: t1.height + i * (t2.height - t1.height),
-    color:  color_grad(t1.color, t2.color, i),
-    draw: (x, y) => {
-      drawLeaves(x, y, ret);
-    },
-    priority: 2
-  };
-  return ret;
-}
 
 
-const leaves = {
-  width:   0.6,
-  height:  0.85,
-  color: {
-    r: 0,
-    g: 255,
-    b: 0,
-    a: 255
-  },
-  draw: (x, y) => {
-    drawLeaves(x, y, leaves);
-  },
-  priority: 2
-};
-const trunk = {
-  width:  0.35,
-  height: 0.85,
-  color:  parse_color('brown'),
-  draw: (x, y) => {
-    drawTrunk(x, y, trunk);
-  },
-  priority: 1
-};
-const big_leaves = {
-  width:   0.9,
-  height:  1.2,
-  color: {
-    r: 0,
-    g: 255,
-    b: 0,
-    a: 255
-  },
-  draw: (x, y) => {
-    drawLeaves(x, y, big_leaves);
-  },
-  priority: 3
-};
-const big_trunk = {
-  width:  0.6,
-  height: 1.2,
-  color:  parse_color('brown'),
-  draw: (x, y) => {
-    drawTrunk(x, y, big_trunk);
-  },
-  priority: 1
-};
-const null_leaves = {
-  width:   0,
-  height:  0,
-  color: {
-    r: 0,
-    g: 255,
-    b: 0,
-    a: 255
-  },
-  draw: (x, y) => {
-    drawLeaves(x, y, null_leaves);
-  },
-  priority: -1
-};
-const null_trunk = {
-  width:  0,
-  height: 0,
-  color:  parse_color('brown'),
-  draw: (x, y) => {
-    drawTrunk(x, y, null_trunk);
-  },
-  priority: -1
-};
-const rock = rock_wash(1, {
-  x: 0,
-  y: 1
-});
 
-const blank = {
-  color: '#000000',
-  land: false,
-  id: 'blank',
-  deco: []
-};
-const grass = {
-  color: '#40FF50',
-  land: true,
-  id: 'grass',
-  deco: []
-};
-const water = {
-  color: '#4050FF',
-  land: false,
-  id: 'water',
-  deco: []
-};
-const sand = {
-  color: '#EAEA70',
-  land: true,
-  id: 'sand',
-  deco: []
-};
-const bridge = {
-  color: 'brown',
-  land: true,
-  id: 'bridge',
-  deco: []
-};
-const grass_tree = {
-  color: grass.color,
-  land: false,
-  id: 'grass_tree',
-  deco: [trunk, leaves]
-};
-const grass_big_tree = {
-  color: grass.color,
-  land: false,
-  id: 'grass_big_tree',
-  deco: [big_trunk, big_leaves]
-};
-const grass_rock = {
-  color: grass.color,
-  land: false,
-  id: 'grass_rock',
-  deco: [rock]
-};
-const sand_rock = {
-  color: sand.color,
-  land: false,
-  id: 'sand_rock',
-  deco: [rock]
-}
-const tile_ref = [
-  blank,
-  grass,
-  water,
-  sand,
-  bridge,
-  grass_tree,
-  grass_big_tree,
-  sand_rock,
-  grass_rock
-];
-for(let i = 0; i < tile_ref.length; i++){
-  tile_ref[i].int_id = i;
-}
-const g = grass;
-const s = sand;
-const w = water;
-
-function sleep(ms) {
+function sleep(/*Number*/ ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function mutated_tile(tile) {
+/**@returns {Tile}*/
+function mutated_tile(/*Tile*/ tile) {
   return {
     color: tile.color,
     land: tile.land,
@@ -335,33 +124,9 @@ function mutated_tile(tile) {
   };
 }
 
-function rock_wash(i, dir) {
-  return {
-    draw: (x, y) => {
-      let j = [];
-      if(i < 1 / 3){
-        j = [3 * i, 0, 0];
-      }
-      else if(i < 2 / 3){
-        j = [1, 3 * i - 1, 0];
-      }
-      else{
-        j = [1, 1, 3 * i - 2];
-      }
-      x *= grid_size;
-      y *= grid_size;
-      ctx.fillStyle = '#C0C0C0';
-      ctx.fillRect(y + (0.1 + (1 - j[0]) * dir.y) * grid_size, x + (0.1 + (1 - j[0]) * dir.x) * grid_size, 0.6 * grid_size, 0.6 * grid_size);
-      ctx.fillStyle = '#707070';
-      ctx.fillRect(y + (0.4 + (1 - j[1]) * dir.y) * grid_size, x + (0.3 + (1 - j[1]) * dir.x) * grid_size, 0.5 * grid_size, 0.5 * grid_size);
-      ctx.fillStyle = '#909090';
-      ctx.fillRect(y + (0.3 + (1 - j[2]) * dir.y) * grid_size, x + (0.6 + (1 - j[2]) * dir.x) * grid_size, 0.3 * grid_size, 0.3 * grid_size);
-    },
-    priority: -1
-  };
-}
 
-var keydown = new Map();
+/**@type {Map<string, boolean>}*/
+let keydown = new Map();
 
 
 document.addEventListener("keyup", onKeyup);
@@ -519,11 +284,11 @@ async function onKeydown(event) {
         pos.x += d.x / steps;
         pos.y += d.y / steps;
         let newTree = mutated_tile(grass_tree);
-        newTree.deco[0] = trunk_grad(null_trunk, trunk, i);
-        newTree.deco[1] = leaves_grad(null_leaves, leaves, i);
+        newTree.deco[0] = deco_part_grad(null_trunk, trunk, i);
+        newTree.deco[1] = deco_part_grad(null_leaves, leaves, i);
         let growTree = mutated_tile(grass_tree);
-        growTree.deco[0] = trunk_grad(trunk, big_trunk, i);
-        growTree.deco[1] = leaves_grad(leaves, big_leaves, i);
+        growTree.deco[0] = deco_part_grad(trunk, big_trunk, i);
+        growTree.deco[1] = deco_part_grad(leaves, big_leaves, i);
         for (let j = 0; j < newTrees.length; j++) {
           let ind = newTrees[j];
           map.tiles[ind.i][ind.j] = newTree;
@@ -565,8 +330,8 @@ async function onKeydown(event) {
   moving = false;
 };
 
-function fillTileColor(x, y, color) {
-  ctx.fillStyle = color;
+function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
+  ctx.fillStyle = ((typeof color) == "object")? color_to_string(color): color;
   if(lines) {
     ctx.fillRect(
       y * grid_size + 1,
@@ -584,11 +349,12 @@ function fillTileColor(x, y, color) {
     );
   }
 }
-function fillTile(x, y, tile) {
+function fillTile(/*Number*/ x, /*Number*/ y, /*Tile*/ tile) {
   fillTileColor(x, y, tile.color);
 }
 
-function validatePos(newPos){
+/**@returns {Boolean}*/
+function validatePos(/*Point*/ newPos){
   if (
     newPos.x < 0 ||
     newPos.y < 0 ||
@@ -606,11 +372,8 @@ function validatePos(newPos){
 
 function board() {
   let htmlversion = document.getElementById('version');
-  if(parseInt(htmlversion.innerText) != version){
+  if(parseInt(htmlversion.innerText) != version || classes_version != version || tiles_version != version){
     htmlversion.innerText = 'Version error! Clear browser cache.';
-  }
-  else{
-    htmlversion.remove();
   }
   let init = false;
   let url = window.location.href;
@@ -833,22 +596,18 @@ function draw() {
   rocksLabel.innerText = rocks;
 }
 
-const seed = {
-  tiles: [
-    [s, s, s],
-    [s, g, s],
-    [s, s, s]
-  ]
-}
 
-function generateMap(h, w){
-  let newMap = {
-    tiles: [],
-    start: {
-      x: 0,
-      y: 0
-    }
-  };
+
+const seed = new TileMap(
+  [
+    [sand, sand, sand],
+    [sand, grass, sand],
+    [sand, sand, sand]
+  ]
+);
+
+function generateMap(/*Number*/ h, /*Number*/ w){
+  let newMap = new TileMap();
   let area = Math.sqrt(w * h);
   for(let i = 0; i < h; i++){
     newMap.tiles[i] = [];
@@ -859,7 +618,7 @@ function generateMap(h, w){
   for(let i = 0; i < h; i++){
     for(let j = 0; j < w; j++){
       if(Math.random() < 0.3 / area){
-        newMap = insertMapElement(newMap, seed, i - 1, j - 1);
+        newMap.insertMapElement(seed, i - 1, j - 1);
       }
     }
   }
@@ -870,11 +629,11 @@ function generateMap(h, w){
         if(newMap.tiles[i][j].id == 'water'){
           for(let x = i - 1; x <= i + 1; x++){
             for(let y = j - 1; y <= j + 1; y++){
-              try{
+              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
                 if(newMap.tiles[x][y].id == 'sand'){
                   adjacent++;
                 }
-              }catch (e) {}
+              }
             }
           }
         }
@@ -891,14 +650,14 @@ function generateMap(h, w){
         if(newMap.tiles[i][j].id == 'sand'){
           for(let x = i - 1; x <= i + 1; x++){
             for(let y = j - 1; y <= j + 1; y++){
-              try{
+              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
                 if(newMap.tiles[x][y].id == 'grass'){
                   adjacent++;
                 }
                 if(newMap.tiles[x][y].id == 'water'){
                   adjacent -= 3;
                 }
-              }catch (e) {}
+              }
             }
           }
         }
@@ -935,19 +694,6 @@ function generateMap(h, w){
   return newMap;
 }
 
-function insertMapElement(big, small, x, y){
-  for(let i = 0; i < small.tiles.length; i++){
-    for(let j = 0; j < small.tiles[0].length; j++){
-      try{
-        if(big.tiles[i + x][j + y] != undefined) {
-          big.tiles[i + x][j + y] = small.tiles[i][j];
-        }
-      }
-      catch(e){}
-    }
-  }
-  return big;
-}
 
 function action(){
   var d = {
@@ -1010,36 +756,7 @@ function action(){
   draw();
 }
 
-function serialize_map(){
-  newMap = {
-    tiles: [],
-    start: {
-      x: Math.round(map.start.x),
-      y: Math.round(map.start.y)
-    }
-  }
-  for(let i = 0; i < map.tiles.length; i++){
-    newMap.tiles[i] = [];
-    for(let j = 0; j < map.tiles[0].length; j++){
-      newMap.tiles[i][j] = map.tiles[i][j].int_id;
-    }
-  }
-  return newMap;
-}
 
-function deserialize_map(newMap){
-  map = {
-    tiles: [],
-    start: newMap.start
-  }
-  for(let i = 0; i < newMap.tiles.length; i++){
-    map.tiles[i] = [];
-    for(let j = 0; j < newMap.tiles[0].length; j++){
-      map.tiles[i][j] = tile_ref[newMap.tiles[i][j]];
-    }
-  }
-  return newMap;
-}
 
 
 const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
