@@ -21,6 +21,7 @@ const saveButton = document.getElementById('save');
 //const deleteCookieButton = document.getElementById('deletecookie');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
+const logField = document.getElementById('log');
 var lumber = 0;
 var rocks = 0;
 var lines = false;
@@ -59,6 +60,10 @@ function  game_str(){
   s += int12_to_b64(Math.round(rocks));
   s += int12_to_b64(Math.round(grid_size));
   return compress_string(s);
+}
+
+function page_log(s){
+  logField.innerText =  logField.innerText + s;
 }
 
 saveButton.addEventListener("click", function () {
@@ -111,7 +116,8 @@ function parse_color(cs){
 function drawLeaves(x, y, obj){
   x *= grid_size;
   y *= grid_size;
-  for(let i = obj.width; i > 0; i -= 0.1) {
+  for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
+    page_log("" + i + " ");
     ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (!detectmob()? (1.1 - i): 1) + ')';
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
