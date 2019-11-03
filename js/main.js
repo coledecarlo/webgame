@@ -123,8 +123,9 @@ function drawLeaves(x, y, obj){
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
     page_log("|" + i + ":");
+    page_log("" + ((1.1 - i)) + ":");
     ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
-    page_log("" + ctx.fillStyle + "");
+    //page_log("" + ctx.fillStyle + "");
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
