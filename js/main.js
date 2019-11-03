@@ -63,11 +63,11 @@ function  game_str(){
 }
 
 function page_log(s){
-  logField.innerText =  logField.innerText + s;
+  logField.innerHTML =  logField.innerHTML + s;
 }
 
 function page_log_clear(){
-  logField.innerText =  '';
+  logField.innerHTML =  '';
 }
 
 saveButton.addEventListener("click", function () {
@@ -118,13 +118,16 @@ function parse_color(cs){
 
 
 function drawLeaves(x, y, obj){
+  page_log_clear()
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
     let s = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
+    page_log(s)
     ctx.fillStyle = s;
     ctx.fillStyle = s;
     ctx.fillStyle = s;
+    page_log(ctx.fillStyle + "<br>");
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
