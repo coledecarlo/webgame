@@ -123,7 +123,7 @@ function drawLeaves(x, y, obj){
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
-    let s = 'rgba(' + String(obj.color.r * (1 - i)).substr(0, 5) + ',' + String(obj.color.g * (1 - i)).substr(0, 5) + ',' + String(obj.color.b * (1 - i)).substr(0, 5) + ',' + String(1.1 - i).substr(0, 5) + ')';
+    let s = 'rgba(' + Math.round(obj.color.r * (1 - i)) + ',' + Math.round(obj.color.g * (1 - i)) + ',' + Math.round(obj.color.b * (1 - i)) + ',' + String(1.1 - i).substr(0, 5) + ')';
     page_log(s)
     ctx.fillStyle = 'white';
     ctx.fillStyle = s;
