@@ -1,4 +1,4 @@
-const version = 9;
+const version = 10;
 var pos;
 var map;
 var grid_size = 60;
@@ -1163,7 +1163,7 @@ $(document).on('touchstart', function(e) {
 
 
 //https://stackoverflow.com/questions/2264072/detect-a-finger-swipe-through-javascript-on-the-iphone-and-android
-/*
+
 document.addEventListener('touchstart', handleTouchStart, false);
 document.addEventListener('touchmove', handleTouchMove, false);
 
@@ -1212,4 +1212,4 @@ function handleTouchMove(evt) {
   // reset values
   xDown = null;
   yDown = null;
-};*/
+};
