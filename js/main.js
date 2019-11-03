@@ -1,4 +1,4 @@
-const version = 8;
+const version = 9;
 var pos;
 var map;
 var grid_size = 60;
