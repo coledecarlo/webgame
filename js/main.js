@@ -118,14 +118,14 @@ function parse_color(cs){
 
 
 function drawLeaves(x, y, obj){
-  page_log_clear();
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
-    page_log("|" + i + ":");
-    page_log("" + ((1.1 - i)) + ":");
-    ctx.fillStyle = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
-    //page_log("" + ctx.fillStyle + "");
+    let s = 'rgba(' + (obj.color.r * (1 - i)) + ',' + (obj.color.g * (1 - i)) + ',' + (obj.color.b * (1 - i)) + ',' + (1.1 - i) + ')';
+    do {
+      ctx.fillStyle = s;
+    }
+    while(ctx.fillStyle != s);
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
