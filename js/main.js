@@ -1,4 +1,4 @@
-const version = 10;
+const version = 11;
 var pos;
 var map;
 var grid_size = 60;
@@ -119,15 +119,12 @@ function parse_color(cs){
 lastfill = ''
 
 function drawLeaves(x, y, obj){
-  page_log_clear()
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
     let s = 'rgba(' + Math.round(obj.color.r * (1 - i)) + ',' + Math.round(obj.color.g * (1 - i)) + ',' + Math.round(obj.color.b * (1 - i)) + ',' + String(1.1 - i).substr(0, 5) + ')';
-    page_log(s)
     ctx.fillStyle = 'white';
     ctx.fillStyle = s;
-    page_log(ctx.fillStyle + "<br>");
     ctx.beginPath();
     ctx.arc(y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
@@ -687,9 +684,13 @@ function board() {
     }
   }
   if(detectmob()){
-    grid_x = 15;
+    grid_x = 19;
     grid_y = 11;
     grid_size = 30;
+    document.getElementById('desktoponly').remove();
+    document.getElementById('dofoot').remove();
+    canvas.setAttribute('style', 'right: 0%; position: relative; touch-action: none !important;');
+    grid_size = Math.ceil(window.innerWidth / grid_y);
   }
 
   calculate();
@@ -825,7 +826,9 @@ function draw() {
   ctx.fillStyle = 'white';
   ctx.fillRect(grid_y * grid_size, 0, grid_size, height);
   ctx.fillRect(0, grid_x * grid_size, width, grid_size);
-  ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
+  if(!detectmob()) {
+    ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
+  }
   lumberLabel.innerText = lumber;
   rocksLabel.innerText = rocks;
 }
