@@ -1,4 +1,5 @@
-const version = 14;
+/**@type {Number}*/
+const version = 15;
 
 /**@type {Array<TileMap>}*/
 let maps = [];
@@ -20,21 +21,35 @@ let height;
 let mid_x;
 /**@type {Number}*/
 let mid_y;
+/**@type {HTMLCanvasElement}*/
 const canvas = document.getElementById('board');
+/**@type {HTMLInputElement}*/
 const showLines = document.getElementById('lines');
+/**@type {HTMLInputElement}*/
 const heightField = document.getElementById('height');
+/**@type {HTMLInputElement}*/
 const widthField = document.getElementById('width');
+/**@type {HTMLInputElement}*/
 const gridField = document.getElementById('gridsize');
+/**@type {HTMLElement}*/
 const lumberLabel = document.getElementById('lumber');
+/**@type {HTMLElement}*/
 const rocksLabel = document.getElementById('rocks');
+/**@type {HTMLButtonElement}*/
 const setButton = document.getElementById('set');
+/**@type {HTMLButtonElement}*/
 const saveButton = document.getElementById('save');
+/**@type {HTMLElement}*/
 const woodHouseHolder = document.getElementById('woodhouseholder');
+/**@type {HTMLButtonElement}*/
 let woodHouseButton;
 //const saveCookieButton = document.getElementById('savecookie');
 //const deleteCookieButton = document.getElementById('deletecookie');
+/**@type {HTMLInputElement}*/
 const saveUrl = document.getElementById('saveurl');
+/**@type {HTMLButtonElement}*/
 const copyButton = document.getElementById('copy');
+/**@type {HTMLElement}*/
 const logField = document.getElementById('log');
 /**@type {Number}*/
 let lumber = 0;
@@ -44,6 +59,7 @@ let rocks = 0;
 let lines = false;
 /**@type {String}*/
 let direction = 'u';
+/**@type {CanvasRenderingContext2D}*/
 let ctx;
 /**@type {Boolean}*/
 let moving = false;
@@ -57,12 +73,11 @@ setButton.addEventListener("click", function () {
   draw();
 });
 
-function color_to_string(/*Color*/ color){
-  return `rgba(${color.r},${color.g},${color.b},${color.a})`;
-}
+
 
 /**@returns {String}*/
 function game_str(){
+  /**@type {String}*/
   let s = '';
   s += int12_to_b64(Math.round(grid_x));
   s += int12_to_b64(Math.round(grid_y));
@@ -89,6 +104,7 @@ function game_str(){
   s += int12_to_b64(Math.round(rocks));
   s += int12_to_b64(Math.round(grid_size));
   s += int12_to_b64(Math.round(maps.length - 1));
+  /**@type {Number}*/
   let curmap = 0;
   for(let k = 1; k < maps.length; k++){
     if(map == maps[k]){
@@ -118,18 +134,22 @@ function game_str(){
   return compress_string(s);
 }
 
+
+/**@returns {void}*/
 function page_log(/*String*/ s){
   logField.innerHTML =  logField.innerHTML + s;
 }
 
+/**@returns {void}*/
 function page_log_clear(){
   logField.innerHTML =  '';
 }
 
-saveButton.addEventListener("click", function () {
+saveButton.addEventListener("click", function() {
+  /**@type {String}*/
   let gs = game_str();
-  saveUrl.value = "coledecarlo.github.io/webgame#" + gs;
-  window.location = "#" + gs;
+  saveUrl.value = `coledecarlo.github.io/webgame/#${gs}`;
+  window.location = `#${gs}`;
 });
 
 /*
@@ -141,11 +161,15 @@ saveCookieButton.addEventListener("click", function () {
 });
  */
 
-copyButton.addEventListener("click", function () {
+copyButton.addEventListener("click", function() {
   saveUrl.select();
   document.execCommand('copy');
 });
 
+
+
+
+/**@returns {void}*/
 function calculate(){
   width = grid_size * (grid_y + 0.1);
   height = grid_size * (grid_x + 0.1);
@@ -158,8 +182,7 @@ function calculate(){
 
 
 
-
-
+/**@returns {Promise}*/
 function sleep(/*Number*/ ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -169,7 +192,7 @@ function mutated_tile(/*Tile*/ tile) {
   return new Tile(
     tile.color,
     tile.land,
-    'mutated_' + tile.id,
+    `mutated_${tile.id}`,
     tile.deco.slice(),
     new Warp(),
     tile.mutating
@@ -181,7 +204,8 @@ let keydown = new Map();
 
 
 document.addEventListener("keyup", onKeyup);
-async function onKeyup(event){
+/**@returns {void}*/
+async function onKeyup(/*KeyboardEvent*/ event){
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -203,8 +227,8 @@ async function onKeyup(event){
 };
 
 document.addEventListener("keydown", onKeydown);
-async function onKeydown(event) {
-
+/**@returns {void}*/
+async function onKeydown(/*KeyboardEvent*/ event) {
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -231,7 +255,6 @@ async function onKeydown(event) {
       console.log(event.key);
       return;
   }
-
   keydown.set(direction, true);
   await sleep(80);
   if(!keydown.get(direction)){
@@ -243,10 +266,8 @@ async function onKeydown(event) {
   }
   moving = true;
   do {
-    let newPos = {
-      x: pos.x,
-      y: pos.y
-    };
+    /**@type {Point}*/
+    let newPos = new Point(pos);
     switch (direction) {
       case "u":
         newPos.x--;
@@ -262,12 +283,17 @@ async function onKeydown(event) {
         break;
     }
     if (validatePos(newPos) == true) {
+      /**@type {Array<Point>}*/
       let newTrees = [];
+      /**@type {Array<Object>}*/
       let newRocks = [];
+      /**@type {Array<Point>}*/
       let growTrees = [];
+      /**@type {Number}*/
       let prox = 10;
       for (let i = Math.round(Math.max(0, pos.x - prox)); i < Math.min(map.tiles.length, pos.x + prox); i++) {
         for (let j = Math.round(Math.max(0, pos.y - prox)); j < Math.min(map.tiles[0].length, pos.y + prox); j++) {
+          /**@type {Number}*/
           let adjacent = 0;
           if (map.tiles[i][j].id == 'grass' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
@@ -284,16 +310,11 @@ async function onKeydown(event) {
             }
           }
           if (Math.random() < (adjacent * 0.0005)) {
-            newTrees[newTrees.length] = {
-              i: i,
-              j: j
-            }
+            newTrees.push(new Point(i, j));
           }
           adjacent = 0;
-          let dir = {
-            x: 0,
-            y: 0
-          };
+          /**@type {Point}*/
+          let dir = new Point();
           if (map.tiles[i][j].id == 'sand' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
               for (let y = j - 1; y <= j + 1; y++) {
@@ -310,62 +331,68 @@ async function onKeydown(event) {
             }
           }
           if (Math.random() < (adjacent * 0.001)) {
-            newRocks[newRocks.length] = {
-              i: i,
-              j: j,
+            newRocks.push({
+              pos: new Point(i, j),
               dir: dir
-            }
+            });
           }
           if (map.tiles[i][j].id == 'grass_tree' && Math.random() < 0.0001) {
-            growTrees[growTrees.length] = {
-              i: i,
-              j: j
-            }
+            growTrees.push(new Point(i, j));
           }
         }
       }
-      let d = {
-        x: newPos.x - pos.x,
-        y: newPos.y - pos.y,
-      }
+      /**@type {Point}*/
+      let d = new Point(
+        newPos.x - pos.x,
+        newPos.y - pos.y
+      );
+      /**@type {Number}*/
       let steps = 10;
       for (let i = 0; i < 1; i = Math.round(steps * i + 1) / steps) {
         await sleep(20);
         map.time += 1 / 10;
         pos.x += d.x / steps;
         pos.y += d.y / steps;
+        /**@type {Tile}*/
         let newTree = mutated_tile(grass_tree);
         newTree.deco[0] = deco_part_grad(null_trunk, trunk, i);
         newTree.deco[1] = deco_part_grad(null_leaves, leaves, i);
+        /**@type {Tile}*/
         let growTree = mutated_tile(grass_tree);
         growTree.deco[0] = deco_part_grad(trunk, big_trunk, i);
         growTree.deco[1] = deco_part_grad(leaves, big_leaves, i);
         for (let j = 0; j < newTrees.length; j++) {
+          /**@type {Point}*/
           let ind = newTrees[j];
-          map.tiles[ind.i][ind.j] = newTree;
+          map.tiles[ind.x][ind.y] = newTree;
         }
         for (let j = 0; j < growTrees.length; j++) {
+          /**@type {Point}*/
           let ind = growTrees[j];
-          map.tiles[ind.i][ind.j] = growTree;
+          map.tiles[ind.x][ind.y] = growTree;
         }
         for (let j = 0; j < newRocks.length; j++) {
+          /**@type {Object}*/
           let ind = newRocks[j];
-          map.tiles[ind.i][ind.j] = mutated_tile(sand);
-          map.tiles[ind.i][ind.j].deco[0] = rock_wash(i, ind.dir);
+          map.tiles[ind.pos.x][ind.pos.y] = mutated_tile(sand);
+          map.tiles[ind.pos.x][ind.pos.y].deco[0] = rock_wash(i, ind.dir);
         }
         draw();
       }
       for (let j = 0; j < newTrees.length; j++) {
+        /**@type {Point}*/
         let ind = newTrees[j];
-        map.tiles[ind.i][ind.j] = grass_tree;
+        map.tiles[ind.x][ind.y] = grass_tree;
       }
       for (let j = 0; j < newRocks.length; j++) {
+        /**@type {Object}*/
         let ind = newRocks[j];
-        map.tiles[ind.i][ind.j] = sand_rock;
+        map.tiles[ind.pos.x][ind.pos.y] = sand_rock;
       }
       for (let j = 0; j < growTrees.length; j++) {
+        /**@type {Point}*/
         let ind = growTrees[j];
-        map.tiles[ind.i][ind.j] = grass_big_tree;
+        map.tiles[ind.x][ind.y] = grass_big_tree;
       }
       pos.x = Math.round(pos.x);
       pos.y = Math.round(pos.y);
@@ -381,8 +408,10 @@ async function onKeydown(event) {
   moving = false;
 };
 
+
+/**@returns {void}*/
 function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
-  ctx.fillStyle = ((typeof color) == "object")? color_to_string(color): color;
+  ctx.fillStyle = color.to_string();
   if(lines) {
     ctx.fillRect(
       y * grid_size + 1,
@@ -400,18 +429,18 @@ function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
     );
   }
 }
+/**@returns {void}*/
 function fillTile(/*Number*/ x, /*Number*/ y, /*Tile*/ tile) {
   fillTileColor(x, y, tile.color);
 }
 
 /**@returns {Boolean}*/
 function validatePos(/*Point*/ newPos){
-  if (
-    newPos.x < 0 ||
-    newPos.y < 0 ||
-    newPos.x >= map.tiles.length ||
-    newPos.y >= map.tiles[0].length
-  ) {
+  if(newPos.x < 0
+  || newPos.y < 0
+  || newPos.x >= map.tiles.length
+  || newPos.y >= map.tiles[0].length
+  ){
     return false;
   }
   if(!map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land){
@@ -420,27 +449,32 @@ function validatePos(/*Point*/ newPos){
   return true;
 }
 
-
+/**@returns {void}*/
 function board() {
-
   document.querySelectorAll("button").forEach( function(item) {
     item.addEventListener('focus', function() {
       this.blur();
     });
   });
+  /**@type {HTMLElement}*/
   let htmlversion = document.getElementById('version');
   if(parseInt(htmlversion.innerText) != version || classes_version != version || tiles_version != version){
     htmlversion.innerText = 'Version error! Clear browser cache.';
   }
+  /**@type {Boolean}*/
   let init = false;
+  /**@type {String}*/
   let url = window.location.href;
+  /**@type {Number}*/
   let poss = url.indexOf('#') + 1;
+  /**@type {String}*/
   let s = '';
   if(poss > 0){
     init = true;
     s = decompress_string(url.substr(poss));
   }
   else{
+    /**@type {String}*/
     let cookie = getCookie('game');
     if(cookie != ''){
       init = true;
@@ -448,7 +482,9 @@ function board() {
     }
   }
   if(init){
+    /**@type {Array<Object>>}*/
     let warppts = [];
+    /**@type {Number}*/
     let k = 0;
     grid_x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
@@ -456,10 +492,13 @@ function board() {
     k += 2;
     lines = s[k] == 'B';
     k += 1;
+    /**@type {Number}*/
     let x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
+    /**@type {Number}*/
     let y = b642_to_int12(s.substr(k, k + 2));
     k += 2;
+    /**@type {Array<Array<Tile>>}*/
     let tiles = [];
     for(let i = 0; i < x; i++){
       tiles[i] = [];
@@ -509,6 +548,7 @@ function board() {
       grid_size = 60;
     }
     if(k < s.length){
+      /**@type {Number}*/
       let n = b642_to_int12(s.substr(k, k + 2));
       k += 2;
       for(let l = 0; l < n; l++) {
@@ -521,9 +561,6 @@ function board() {
           tiles[i] = [];
           for (let j = 0; j < y; j++) {
             tiles[i][j] = tile_ref[b641_to_int6(s[k + i * y + j])];
-            if (tiles[i][j] == undefined) {
-              let aaaa = 1 + 1;
-            }
             if (tiles[i][j].warp.enabled) {
               warppts.push({
                 map: l + 1,
@@ -573,32 +610,22 @@ function board() {
     grid_size = Math.ceil(window.innerWidth / grid_y);
     grid_x = Math.floor((window.innerHeight - 128) / grid_size);
   }
-
   calculate();
-  //console.assert((width / grid_size) % 2 == 0);
-  //console.assert((height / grid_size) % 2 == 0);
   heightField.value = grid_x;
   widthField.value = grid_y;
   gridField.value = grid_size;
-
   if (canvas.getContext) {
     ctx = canvas.getContext('2d');
-
     if(!init) {
       maps.push(generateMap(100, 100));
       pos = new Point(maps[0].start);
       map = maps[0];
     }
-
-
-
-
     draw();
-
-
   }
 }
 
+/**@returns {void}*/
 function drawLines(){
   for (let i = -(pos.y % 1) * grid_size; i < width; i += grid_size) {
     ctx.moveTo(i + 0.5, 0.5);
@@ -618,31 +645,24 @@ let interior = new Map();
 /**@type {Map<Tile, Point>}*/
 let exterior = new Map();
 
-/**@type {TypeMap}*/
-const wood_hosue_map = new TileMap(
-  [
-    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
-    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
-    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
-    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
-    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
-    [blank, blank, exit_warp, blank, blank],
-  ],
-  new Point(4, 2)
-);
 
-interior.set(wood_house_warp, wood_hosue_map);
+
+interior.set(wood_house_warp, wood_house_map);
 exterior.set(wood_house_warp, new Point(1, 3));
 
-
+/**@returns {void}*/
 function build(/*Tile*/ tile) {
   if(map != maps[0]){
     return;
   }
   pos.round();
+  /**@type {Point}*/
   let p = facing();
+  /**@type {Boolean}*/
   let clear = true;
+  /**@type {TileMap}*/
   let newMap;
+  /**@type {Point}*/
   let dim = exterior.get(tile);
   switch(direction){
     case "u":
@@ -749,7 +769,7 @@ function build(/*Tile*/ tile) {
   draw();
 }
 
-
+/**@returns {void}*/
 function draw() {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, width, height);
@@ -758,8 +778,11 @@ function draw() {
   }
   for(let i = -(pos.x % 1); i < grid_x; i++){
     for(let j = -(pos.y % 1); j < grid_y; j++){
+      /**@type {Number}*/
       let x = Math.round(i - mid_x + pos.x);
+      /**@type {Number}*/
       let y = Math.round(j - mid_y + pos.y);
+      /**@type {Tile}*/
       let tile;
       if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
         tile = map.tiles[x][y];
@@ -772,8 +795,11 @@ function draw() {
   }
   for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
     for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
+      /**@type {Number}*/
       let x = Math.round(i - mid_x + pos.x);
+      /**@type {Number}*/
       let y = Math.round(j - mid_y + pos.y);
+      /**@type {Tile}*/
       let tile;
       if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
         tile = map.tiles[x][y];
@@ -788,21 +814,20 @@ function draw() {
       }
     }
   }
-  ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+  ctx.fillStyle = 'black';
   ctx.beginPath();
-  ctx.arc((mid_y + 0.5) * grid_size,
+  ctx.arc(
+    (mid_y + 0.5) * grid_size,
     (mid_x + 0.5) * grid_size,
     grid_size * 0.3,
     0,
     2 * Math.PI
   );
   ctx.fill();
-  ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+  ctx.fillStyle = '#FF0000';
   ctx.beginPath();
-  var d = {
-    x: 0,
-    y: 0
-  };
+  /**@type {Point}*/
+  let d = new Point();
   switch(direction){
     case 'u':
       d.x = -0.3;
@@ -815,8 +840,10 @@ function draw() {
       break;
     case 'r':
       d.y = 0.3;
+      break;
   }
-  ctx.arc((mid_y + 0.5 + d.y) * grid_size,
+  ctx.arc(
+    (mid_y + 0.5 + d.y) * grid_size,
     (mid_x + 0.5 + d.x) * grid_size,
     grid_size * 0.05,
     0,
@@ -871,22 +898,11 @@ function draw() {
   }
 }
 
-
-/**@type {TypeMap}*/
-const seed = new TileMap(
-  [
-    [sand, sand, sand],
-    [sand, grass, sand],
-    [sand, sand, sand]
-  ],
-  new Point()
-);
-
-
-
 /**@returns {TypeMap}*/
 function generateMap(/*Number*/ h, /*Number*/ w){
+  /**@type {TileMap}*/
   let newMap = new TileMap();
+  /**@type {Number}*/
   let area = Math.sqrt(w * h);
   for(let i = 0; i < h; i++){
     newMap.tiles[i] = [];
@@ -904,6 +920,7 @@ function generateMap(/*Number*/ h, /*Number*/ w){
   for(let k = 0; k < Math.floor(area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){
+        /**@type {Number}*/
         let adjacent = 0;
         if(newMap.tiles[i][j].id == 'water'){
           for(let x = i - 1; x <= i + 1; x++){
@@ -925,6 +942,7 @@ function generateMap(/*Number*/ h, /*Number*/ w){
   for(let k = 0; k < Math.floor(area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){
+        /**@type {Number}*/
         let adjacent = 0;
         if(newMap.tiles[i][j].id == 'sand'){
           for(let x = i - 1; x <= i + 1; x++){
@@ -946,7 +964,8 @@ function generateMap(/*Number*/ h, /*Number*/ w){
       }
     }
   }
-  let grasses = []
+  /**@type {Array<Point>}*/
+  let grasses = [];
   for(let i = 0; i < h; i++){
     for(let j = 0; j < w; j++){
       if(newMap.tiles[i][j].id == 'grass'){
@@ -959,10 +978,7 @@ function generateMap(/*Number*/ h, /*Number*/ w){
           }
         }
         else{
-          grasses.push(new Point(
-            i,
-            j
-          ));
+          grasses.push(new Point(i, j));
         }
 
       }
@@ -975,6 +991,7 @@ function generateMap(/*Number*/ h, /*Number*/ w){
 
 /**@returns {Point}*/
 function facing() {
+  /**@type {Point}*/
   let d = new Point();
   switch(direction){
     case 'u':
@@ -995,7 +1012,9 @@ function facing() {
   );
 }
 
+/**@returns {void}*/
 function action(){
+  /**@type {Point}*/
   let targetPos = facing();
   switch(map.tiles[targetPos.x][targetPos.y].id){
     case 'grass_tree':
@@ -1060,9 +1079,8 @@ function action(){
 
 /**@type {String}*/
 const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-
-/**@returns {Map<String, Number>}*/
-var reverseb64 = new Map();
+/**@type {Map<String, Number>}*/
+let reverseb64 = new Map();
 for(let i = 0; i < 64; i++){
   reverseb64.set(b64Str[i], i);
 }
@@ -1071,17 +1089,14 @@ for(let i = 0; i < 64; i++){
 function int12_to_b64(/*Number*/ int){
   return b64Str[Math.floor(int / 64)] + b64Str[int % 64]
 }
-
 /**@returns {Number}*/
 function b642_to_int12(/*String*/ b64){
   return reverseb64.get(b64[0]) * 64 + reverseb64.get(b64[1]);
 }
-
 /**@returns {String}*/
 function int6_to_b64(/*Number*/ int){
   return b64Str[int]
 }
-
 /**@returns {Number}*/
 function b641_to_int6(/*String*/ b64){
   return reverseb64.get(b64[0]);
@@ -1092,8 +1107,11 @@ function compress_string(/*String*/ s){
   if(s[s.length - 1] == s[s.length - 2]){
     s += '=';
   }
+  /**@type {String}*/
   let lc = s[0];
+  /**@type {Number}*/
   let li = 0;
+  /**@type {Boolean}*/
   let inPar = false;
   for(let i = 1; i < s.length; i++){
     if(inPar){
@@ -1112,26 +1130,28 @@ function compress_string(/*String*/ s){
       continue;
     }
     if(i - li > 4){
-      return compress_string(s.substr(0, li + 1) + "(" + (i - li) + ")" + s.substr(i));
+      return compress_string(`${s.substr(0, li + 1)}(${i - li})${s.substr(i)}`);
     }
     li = i;
     lc = s[i];
   }
   return s;
 }
-
 /**@returns {String}*/
 function decompress_string(/*String*/ s){
   if(s[s.length - 1] == '='){
     s = s.substr(0, s.length - 1);
   }
+  /**@type {Boolean}*/
   let inPar = false;
+  /**@type {String}*/
   let num = '';
+  /**@type {Number}*/
   let li = 0;
   for(let i = 0; i < s.length; i++){
     if(inPar){
       if(s[i] == ')'){
-        return decompress_string(s.substr(0, li - 1) + s[li - 1].repeat(parseInt(num)) + s.substr(i + 1));
+        return decompress_string(`${s.substr(0, li - 1)}${s[li - 1].repeat(parseInt(num))}${s.substr(i + 1)}`);
       }
       else{
         num += s[i]
@@ -1148,23 +1168,30 @@ function decompress_string(/*String*/ s){
   return s;
 }
 
-function setCookie(cname, cvalue, exdays) {
-  var d = new Date();
+/**@returns {void}*/
+function setCookie(/*string*/ cname, /*String*/ cvalue, /*Number*/ exdays) {
+  /**@type {Date}*/
+  let d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  var expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  /**@type {String}*/
+  let expires = `expires=${d.toUTCString()}`;
+  document.cookie = `${cname}=${cvalue};${expires};path=/`;
 }
-
-function getCookie(cname) {
-  var name = cname + "=";
-  var decodedCookie = decodeURIComponent(document.cookie);
-  var ca = decodedCookie.split(';');
-  for(var i = 0; i <ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') {
+/**@returns {String}*/
+function getCookie(/*String*/ cname) {
+  /**@type {String}*/
+  let name = `${cname}=`;
+  /**@type {String}*/
+  let decodedCookie = decodeURIComponent(document.cookie);
+  /**@type {Array<String>}*/
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    /**@type {String}*/
+    let c = ca[i];
+    while(c.charAt(0) == ' ') {
       c = c.substring(1);
     }
-    if (c.indexOf(name) == 0) {
+    if(c.indexOf(name) == 0) {
       return c.substring(name.length, c.length);
     }
   }
@@ -1172,6 +1199,9 @@ function getCookie(cname) {
 }
 
 
+
+
+/**@returns {void}*/
 async function simulateKeypress(a){
   onKeydown({
     key: a
@@ -1253,3 +1283,4 @@ function handleTouchMove(evt) {
   xDown = null;
   yDown = null;
 };
+

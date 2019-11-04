@@ -1,16 +1,16 @@
-const tiles_version = 14;
+/**@type {Number}*/
+const tiles_version = 15;
 
 
-
+/**@returns {void}*/
 function drawLeaves(/*Number*/ x, /*Number*/ y, /*DecoPart*/ obj){
   x *= grid_size;
   y *= grid_size;
   for(let i = obj.width; i > 0; i = (10 * i - 1) / 10) {
-    let s = color_to_string(new Color(Math.round(obj.color.r * (1 - i)), Math.round(obj.color.g * (1 - i)), Math.round(obj.color.b * (1 - i)), 1.1 - i));
-    ctx.fillStyle = 'white';
-    ctx.fillStyle = s;
+    ctx.fillStyle = new Color(Math.round(obj.color.r * (1 - i)), Math.round(obj.color.g * (1 - i)), Math.round(obj.color.b * (1 - i)), 1.1 - i).to_string();
     ctx.beginPath();
-    ctx.arc(y + 0.5 * grid_size,
+    ctx.arc(
+      y + 0.5 * grid_size,
       x + (1 - obj.height) * grid_size,
       grid_size * i,
       0,
@@ -20,10 +20,11 @@ function drawLeaves(/*Number*/ x, /*Number*/ y, /*DecoPart*/ obj){
   }
 }
 
+/**@returns {void}*/
 function drawTrunk(/*Number*/ x, /*Number*/ y, /*DecoPart*/ obj){
   x *= grid_size;
   y *= grid_size;
-  ctx.fillStyle = 'rgba(' + obj.color.r + ',' + obj.color.g + ',' + obj.color.b + ',' + obj.color.a + ')';
+  ctx.fillStyle = obj.color.to_string();
   ctx.fillRect(y + (1 - obj.width) / 2 * grid_size, x + (1 - obj.height) * grid_size, obj.width * grid_size, obj.height * grid_size);
 }
 
@@ -49,9 +50,10 @@ function deco_part_grad(/*DecoPart*/ t1, /*DecoPart*/ t2, /*Number*/ i){
 }
 
 /**@returns {Decoration}*/
-function rock_wash(i, dir) {
+function rock_wash(/*Number*/ i, /*Point*/ dir) {
   return new Decoration(
     (x, y) => {
+      /**@type {Array<Number>}*/
       let j = [];
       if(i < 1 / 3){
         j = [3 * i, 0, 0];
@@ -74,7 +76,6 @@ function rock_wash(i, dir) {
     -1
   );
 }
-
 
 
 
@@ -192,9 +193,8 @@ const exit_arrow = new Decoration(
   (x, y) => {
     x *= grid_size;
     y *= grid_size;
-    let red = '#FF0000';
-    ctx.fillStyle = red;
-    ctx.fillRect(y + 2 * grid_size / 5, x + grid_size / 10, grid_size / 5, 3 * grid_size / 5);
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(y + 2 * grid_size / 5, x + grid_size / 10, grid_size / 5, 7 * grid_size / 10);
     ctx.beginPath();
     ctx.moveTo(y + grid_size / 5, x + 7 * grid_size / 10);
     ctx.lineTo(y + 4 * grid_size / 5, x + 7 * grid_size / 10);
@@ -330,4 +330,28 @@ const tile_ref = [
 for(let i = 0; i < tile_ref.length; i++){
   tile_ref[i].add_int_id(i);
 }
+
+
+
+/**@type {TypeMap}*/
+const seed = new TileMap(
+  [
+    [sand, sand,  sand],
+    [sand, grass, sand],
+    [sand, sand,  sand]
+  ],
+  new Point()
+);
+/**@type {TypeMap}*/
+const wood_house_map = new TileMap(
+  [
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [blank,      blank,      exit_warp,  blank,      blank     ]
+  ],
+  new Point(4, 2)
+);
 

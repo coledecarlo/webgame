@@ -21,35 +21,33 @@
   <!--[if IE]>
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
-
-  <!-- Add your site or application content here -->
-  <p></p>
-
   <div style="right: -5%; position: relative">
-    <a id="desktoponly">
-    Show lines: <input type="checkbox" id="lines"> &nbsp;
-    Height: <input type="text" id="height"> &nbsp;
-    Width: <input type="text" id="width"> &nbsp;
-    Grid Size: <input type="text" id="gridsize"> &nbsp;
-    <button id="set">Set</button> &nbsp;
-    </a>
+    <span id="desktoponly">
+      Show lines: <input type="checkbox" id="lines"> &nbsp;
+      Height: <input type="text" id="height"> &nbsp;
+      Width: <input type="text" id="width"> &nbsp;
+      Grid Size: <input type="text" id="gridsize"> &nbsp;
+      <button id="set">Set</button> &nbsp;
+    </span>
     <button id="save">Save Game to URL</button> &nbsp; &nbsp;
-    Version:<a id="version">14</a>
+    Version: <span id="version">15</span>
     <!--<button id="savecookie">Save Game To Cookie</button>
     <button id="deletecookie">Delete Cookie</button>-->
   </div>
-
   <br>
-
-
   <canvas id="board" width="150" height="150" touch-action="none" style="right: -5%; position: relative; touch-action: none !important;"></canvas>
-  <div style="right: -5%; position: relative">Lumber: <a id="lumber">0</a>&nbsp;&nbsp;&nbsp;<a id="woodhouseholder"></a></div>
-  <div style="right: -5%; position: relative">Rocks: <a id="rocks">0</a></div>
-  <a id="dofoot">
-  <div style="right: -5%; position: relative">Save Url: <input id="saveurl" type="text"/></div>
-  <div style="right: -5%; position: relative"><button id="copy">Copy to Clipboard</button></div>
-  </a>
-  <div style="right: -5%; position: relative"><a id="log"></a></div>
+  <div style="right: -5%; position: relative">
+    Lumber: <span id="lumber">0</span>
+    <span style="right: -8%; position: relative" id="woodhouseholder"></span>
+  </div>
+  <div style="right: -5%; position: relative">Rocks: <span id="rocks">0</span></div>
+  <span id="dofoot">
+    <div style="right: -5%; position: relative">
+      Save Url: <input id="saveurl" type="text"/>
+      <button id="copy">Copy to Clipboard</button>
+    </div>
+  </span>
+  <div style="right: -5%; position: relative"><span id="log"></span></div>
 
 
 

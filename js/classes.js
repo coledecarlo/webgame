@@ -1,4 +1,5 @@
-const classes_version = 14;
+/**@type {Number}*/
+const classes_version = 15;
 
 
 class Tile{
@@ -16,6 +17,7 @@ class Tile{
     /**@type {Tile}*/
     this.mutating = mutating || this;
   }
+  /**@returns {void}*/
   add_int_id(/*Number*/ int_id){
     /**@type {Number}*/
     this.int_id = int_id;
@@ -24,12 +26,15 @@ class Tile{
 class Color{
   constructor(/*Number | String*/ r, /*Number?*/ g, /*Number?*/ b, /*Number?*/ a){
     if(arguments.length == 1){
+      /**@type {String}*/
+      let cs = r;
+      /**@type {HTMLCanvasElement}*/
       let can = document.createElement("canvas");
-      can.height = 1;
-      can.width = 1;
+      /**@type {CanvasRenderingContext2D}*/
       let con = can.getContext('2d');
-      con.fillStyle = r;
+      con.fillStyle = cs;
       con.fillRect(0, 0, 1, 1);
+      /**@type {ImageData}*/
       let img = con.getImageData(0, 0, 1, 1);
       can.remove();
       r = img.data[0];
@@ -46,6 +51,10 @@ class Color{
     /**@type {Number}*/
     this.a = a;
   }
+  /**@returns {String}*/
+  to_string(){
+    return `rgba(${this.r},${this.g},${this.b},${this.a})`;
+  }
 };
 class Point{
   constructor(/*Number | Point?*/ x, /*Number?*/ y){
@@ -60,6 +69,7 @@ class Point{
       this.y = y || 0;
     }
   }
+  /**@returns {void}*/
   round(){
     this.x = Math.round(this.x);
     this.y = Math.round(this.y);
@@ -68,11 +78,13 @@ class Point{
 class TileMap{
   constructor(/*Array | TileMap?*/ tiles, /*Point?*/ start, /*Number?*/ time){
     if(arguments.length == 1){
-      this.start = new Point(tiles.start);
-      this.time = tiles.time;
+      /**@type {TileMap}*/
+      let map = tiles;
+      this.start = new Point(map.start);
+      this.time = map.time;
       this.tiles = [];
-      for(let i = 0; i < tiles.tiles.length; i++){
-        this.tiles[i] = tiles.tiles[i].slice();
+      for(let i = 0; i < map.tiles.length; i++){
+        this.tiles[i] = map.tiles[i].slice();
       }
     }
     else {
@@ -84,6 +96,7 @@ class TileMap{
       this.time = time || 0;
     }
   }
+  /**@returns {void}*/
   insertMapElement(/*TileMap*/ small, /*Number*/ x, /*Number*/ y){
     for(let i = 0; i < small.tiles.length; i++){
       for(let j = 0; j < small.tiles[0].length; j++){
@@ -103,6 +116,7 @@ class Decoration{
     /**@type {Number}*/
     this.priority = priority;
   }
+  /**@returns {void}*/
   draw(/*Number*/ x, /*Number*/ y){
     this.drawFun(x, y);
   }
@@ -117,6 +131,7 @@ class DecoPart extends Decoration{
     /**@type {Color}*/
     this.color = color;
   }
+  /**@returns {void}*/
   draw(/*Number*/ x, /*Number*/ y) {
     this.drawFun(x, y, this);
   }
