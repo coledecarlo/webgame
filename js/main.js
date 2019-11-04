@@ -1,14 +1,24 @@
-const version = 13;
+const version = 14;
 
-
-let pos = new Point();
-let map = new TileMap();
+/**@type {Array<TileMap>}*/
+let maps = [];
+/**@type {Point}*/
+let pos;
+/**@type {TileMap}*/
+let map;
+/**@type {Number}*/
 let grid_size = 60;
+/**@type {Number}*/
 let grid_x = 13;
+/**@type {Number}*/
 let grid_y = 23;
-let width = new Number();
+/**@type {Number}*/
+let width;
+/**@type {Number}*/
 let height;
+/**@type {Number}*/
 let mid_x;
+/**@type {Number}*/
 let mid_y;
 const canvas = document.getElementById('board');
 const showLines = document.getElementById('lines');
@@ -19,16 +29,23 @@ const lumberLabel = document.getElementById('lumber');
 const rocksLabel = document.getElementById('rocks');
 const setButton = document.getElementById('set');
 const saveButton = document.getElementById('save');
+const woodHouseHolder = document.getElementById('woodhouseholder');
+let woodHouseButton;
 //const saveCookieButton = document.getElementById('savecookie');
 //const deleteCookieButton = document.getElementById('deletecookie');
 const saveUrl = document.getElementById('saveurl');
 const copyButton = document.getElementById('copy');
 const logField = document.getElementById('log');
+/**@type {Number}*/
 let lumber = 0;
+/**@type {Number}*/
 let rocks = 0;
+/**@type {Boolean}*/
 let lines = false;
+/**@type {String}*/
 let direction = 'u';
 let ctx;
+/**@type {Boolean}*/
 let moving = false;
 
 setButton.addEventListener("click", function () {
@@ -44,27 +61,60 @@ function color_to_string(/*Color*/ color){
   return `rgba(${color.r},${color.g},${color.b},${color.a})`;
 }
 
-function  game_str(){
+/**@returns {String}*/
+function game_str(){
   let s = '';
   s += int12_to_b64(Math.round(grid_x));
   s += int12_to_b64(Math.round(grid_y));
   s += lines? "B": "A";
-  s += int12_to_b64(map.tiles.length);
-  s += int12_to_b64(map.tiles[0].length);
-  for(let i = 0; i < map.tiles.length; i++){
-    for(let j = 0; j < map.tiles[0].length; j++){
-      s += int6_to_b64(map.tiles[i][j].int_id);
+  s += int12_to_b64(maps[0].tiles.length);
+  s += int12_to_b64(maps[0].tiles[0].length);
+  /**@type {Array<Warp>}*/
+  let warps = [];
+  for(let i = 0; i < maps[0].tiles.length; i++){
+    for(let j = 0; j < maps[0].tiles[0].length; j++){
+      s += int6_to_b64(maps[0].tiles[i][j].mutating.int_id);
+      if(maps[0].tiles[i][j].warp.enabled){
+        warps.push(maps[0].tiles[i][j].warp);
+      }
     }
   }
-  s += int12_to_b64(Math.round(map.start.x));
-  s += int12_to_b64(Math.round(map.start.y));
+  s += int12_to_b64(Math.round(maps[0].start.x));
+  s += int12_to_b64(Math.round(maps[0].start.y));
   s += int12_to_b64(Math.round(pos.x));
   s += int12_to_b64(Math.round(pos.y));
   s += direction;
   s += int12_to_b64(Math.round(lumber));
-  s += int12_to_b64(Math.round(map.time));
+  s += int12_to_b64(Math.round(maps[0].time));
   s += int12_to_b64(Math.round(rocks));
   s += int12_to_b64(Math.round(grid_size));
+  s += int12_to_b64(Math.round(maps.length - 1));
+  let curmap = 0;
+  for(let k = 1; k < maps.length; k++){
+    if(map == maps[k]){
+      curmap = k;
+    }
+    s += int12_to_b64(maps[k].tiles.length);
+    s += int12_to_b64(maps[k].tiles[0].length);
+    for(let i = 0; i < maps[k].tiles.length; i++){
+      for(let j = 0; j < maps[k].tiles[0].length; j++){
+        s += int6_to_b64(maps[k].tiles[i][j].mutating.int_id);
+        if(maps[k].tiles[i][j].warp.enabled){
+          warps.push(maps[k].tiles[i][j].warp);
+        }
+      }
+    }
+    s += int12_to_b64(Math.round(maps[k].start.x));
+    s += int12_to_b64(Math.round(maps[k].start.y));
+    s += int12_to_b64(Math.round(maps[k].time));
+  }
+  for(let i = 0; i < warps.length; i++){
+    s += int12_to_b64(Math.round(warps[i].map));
+    s += warps[i].direction;
+    s += int12_to_b64(Math.round(warps[i].target.x));
+    s += int12_to_b64(Math.round(warps[i].target.y));
+  }
+  s += int12_to_b64(Math.round(curmap));
   return compress_string(s);
 }
 
@@ -116,14 +166,15 @@ function sleep(/*Number*/ ms) {
 
 /**@returns {Tile}*/
 function mutated_tile(/*Tile*/ tile) {
-  return {
-    color: tile.color,
-    land: tile.land,
-    id: 'mutated_' + tile.id,
-    deco: []
-  };
+  return new Tile(
+    tile.color,
+    tile.land,
+    'mutated_' + tile.id,
+    tile.deco.slice(),
+    new Warp(),
+    tile.mutating
+  );
 }
-
 
 /**@type {Map<string, boolean>}*/
 let keydown = new Map();
@@ -154,7 +205,6 @@ async function onKeyup(event){
 document.addEventListener("keydown", onKeydown);
 async function onKeydown(event) {
 
-
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -179,6 +229,7 @@ async function onKeydown(event) {
       return;
     default:
       console.log(event.key);
+      return;
   }
 
   keydown.set(direction, true);
@@ -371,6 +422,12 @@ function validatePos(/*Point*/ newPos){
 
 
 function board() {
+
+  document.querySelectorAll("button").forEach( function(item) {
+    item.addEventListener('focus', function() {
+      this.blur();
+    });
+  });
   let htmlversion = document.getElementById('version');
   if(parseInt(htmlversion.innerText) != version || classes_version != version || tiles_version != version){
     htmlversion.innerText = 'Version error! Clear browser cache.';
@@ -391,6 +448,7 @@ function board() {
     }
   }
   if(init){
+    let warppts = [];
     let k = 0;
     grid_x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
@@ -407,34 +465,40 @@ function board() {
       tiles[i] = [];
       for(let j = 0; j < y; j++){
         tiles[i][j] = tile_ref[b641_to_int6(s[k + i * y + j])];
+        if(tiles[i][j].warp.enabled) {
+          warppts.push({
+            map: 0,
+            pos: new Point(i, j)
+          });
+        }
       }
     }
     k += x * y;
-    map = {
-      tiles: tiles,
-      start: {
-        x: b642_to_int12(s.substr(k, k + 2)),
-        y: b642_to_int12(s.substr(k + 2, k + 4))
-      }
-    }
+    maps.push(new TileMap(
+      tiles,
+      new Point(
+        b642_to_int12(s.substr(k, k + 2)),
+        b642_to_int12(s.substr(k + 2, k + 4))
+      )
+    ));
     k += 4;
-    pos = {
-      x: b642_to_int12(s.substr(k, k + 2)),
-      y: b642_to_int12(s.substr(k + 2, k + 4))
-    }
+    pos = new Point(
+      b642_to_int12(s.substr(k, k + 2)),
+      b642_to_int12(s.substr(k + 2, k + 4))
+    );
     k += 4;
     direction = s[k];
     k += 1;
     lumber = b642_to_int12(s.substr(k, k + 2));
     k += 2;
     if(k < s.length){
-      map.time = b642_to_int12(s.substr(k, k + 2));
+      maps[0].time = b642_to_int12(s.substr(k, k + 2));
       k += 2;
       rocks = b642_to_int12(s.substr(k, k + 2));
       k += 2;
     }
     else{
-      map.time = 0;
+      maps[0].time = 0;
       rocks = 0;
     }
     if(k < s.length){
@@ -443,6 +507,60 @@ function board() {
     }
     else{
       grid_size = 60;
+    }
+    if(k < s.length){
+      let n = b642_to_int12(s.substr(k, k + 2));
+      k += 2;
+      for(let l = 0; l < n; l++) {
+        x = b642_to_int12(s.substr(k, k + 2));
+        k += 2;
+        y = b642_to_int12(s.substr(k, k + 2));
+        k += 2;
+        tiles = [];
+        for (let i = 0; i < x; i++) {
+          tiles[i] = [];
+          for (let j = 0; j < y; j++) {
+            tiles[i][j] = tile_ref[b641_to_int6(s[k + i * y + j])];
+            if (tiles[i][j] == undefined) {
+              let aaaa = 1 + 1;
+            }
+            if (tiles[i][j].warp.enabled) {
+              warppts.push({
+                map: l + 1,
+                pos: new Point(i, j)
+              });
+            }
+          }
+        }
+        k += x * y;
+        maps.push(new TileMap(
+          tiles,
+          new Point(
+            b642_to_int12(s.substr(k, k + 2)),
+            b642_to_int12(s.substr(k + 2, k + 4))
+          ),
+          b642_to_int12(s.substr(k + 4, k + 6)),
+        ));
+        k += 6;
+      }
+      for(let i = 0; i < warppts.length; i++){
+        maps[warppts[i].map].tiles[warppts[i].pos.x][warppts[i].pos.y] = mutated_tile(maps[warppts[i].map].tiles[warppts[i].pos.x][warppts[i].pos.y]);
+        maps[warppts[i].map].tiles[warppts[i].pos.x][warppts[i].pos.y].warp = new Warp(
+          true,
+          b642_to_int12(s.substr(k, k + 2)),
+          s[k + 2],
+          new Point(
+            b642_to_int12(s.substr(k + 3, k + 5)),
+            b642_to_int12(s.substr(k + 5, k + 7))
+          )
+        );
+        k += 7
+      }
+      map = maps[b642_to_int12(s.substr(k, k + 2))];
+      k += 2;
+    }
+    else{
+      map = maps[0];
     }
   }
   if(detectmob()){
@@ -467,8 +585,9 @@ function board() {
     ctx = canvas.getContext('2d');
 
     if(!init) {
-      map = generateMap(100, 100);
-      pos = map.start;
+      maps.push(generateMap(100, 100));
+      pos = new Point(maps[0].start);
+      map = maps[0];
     }
 
 
@@ -492,6 +611,144 @@ function drawLines(){
     ctx.stroke();
   }
 }
+
+/**@type {Map<Tile, TileMap>}*/
+let interior = new Map();
+
+/**@type {Map<Tile, Point>}*/
+let exterior = new Map();
+
+/**@type {TypeMap}*/
+const wood_hosue_map = new TileMap(
+  [
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],
+    [blank, blank, exit_warp, blank, blank],
+  ],
+  new Point(4, 2)
+);
+
+interior.set(wood_house_warp, wood_hosue_map);
+exterior.set(wood_house_warp, new Point(1, 3));
+
+
+function build(/*Tile*/ tile) {
+  if(map != maps[0]){
+    return;
+  }
+  pos.round();
+  let p = facing();
+  let clear = true;
+  let newMap;
+  let dim = exterior.get(tile);
+  switch(direction){
+    case "u":
+      for(let i = pos.x - dim.x; i < pos.x; i++){
+        for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
+          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+            clear = false;
+            break;
+          }
+        }
+      }
+      if(!clear){
+        return;
+      }
+      for(let i = pos.x - dim.x; i < pos.x; i++){
+        for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
+          map.tiles[i][j] = blank;
+        }
+      }
+      maps.push(new TileMap(interior.get(tile)));
+      map.tiles[pos.x - 1][pos.y] = mutated_tile(tile);
+      map.tiles[pos.x - 1][pos.y].warp = new Warp(true, maps.length - 1, 'u');
+      newMap = maps[maps.length - 1];
+      newMap.tiles[newMap.start.x + 1][newMap.start.y] = mutated_tile(exit_warp);
+      newMap.tiles[newMap.start.x + 1][newMap.start.y].warp = new Warp(true, 0, 'd', new Point(pos));
+      lumber -= 10;
+      break;
+    case "d":
+      for(let i = pos.x + 1; i < pos.x + dim.x + 1; i++){
+        for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
+          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+            clear = false;
+            break;
+          }
+        }
+      }
+      if(!clear){
+        return;
+      }
+      for(let i = pos.x + 1; i < pos.x + dim.x + 1; i++){
+        for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
+          map.tiles[i][j] = blank;
+        }
+      }
+      maps.push(new TileMap(interior.get(tile)));
+      map.tiles[pos.x + dim.x][pos.y] = mutated_tile(tile);
+      map.tiles[pos.x + dim.x][pos.y].warp = new Warp(true, maps.length - 1, 'u');
+      newMap = maps[maps.length - 1];
+      newMap.tiles[newMap.start.x + 1][newMap.start.y] = mutated_tile(exit_warp);
+      newMap.tiles[newMap.start.x + 1][newMap.start.y].warp = new Warp(true, 0, 'd', new Point(pos.x + dim.x + 1, pos.y));
+      lumber -= 10;
+      break;
+    case "l":
+      for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
+        for(let j  = pos.y - dim.y; j < pos.y; j++){
+          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+            clear = false;
+            break;
+          }
+        }
+      }
+      if(!clear){
+        return;
+      }
+      for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
+        for(let j  = pos.y - dim.y; j < pos.y; j++){
+          map.tiles[i][j] = blank;
+        }
+      }
+      maps.push(new TileMap(interior.get(tile)));
+      map.tiles[pos.x][pos.y - Math.ceil(dim.y / 2)] = mutated_tile(tile);
+      map.tiles[pos.x][pos.y - Math.ceil(dim.y / 2)].warp = new Warp(true, maps.length - 1, 'u');
+      newMap = maps[maps.length - 1];
+      newMap.tiles[newMap.start.x + 1][newMap.start.y] = mutated_tile(exit_warp);
+      newMap.tiles[newMap.start.x + 1][newMap.start.y].warp = new Warp(true, 0, 'd', new Point(pos.x + 1, pos.y - Math.ceil(dim.y / 2)));
+      lumber -= 10;
+      break;
+    case "r":
+      for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
+        for(let j  = pos.y + 1; j < pos.y + dim.y + 1; j++){
+          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+            clear = false;
+            break;
+          }
+        }
+      }
+      if(!clear){
+        return;
+      }
+      for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
+        for(let j  = pos.y + 1; j < pos.y + dim.y + 1; j++){
+          map.tiles[i][j] = blank;
+        }
+      }
+      maps.push(new TileMap(interior.get(tile)));
+      map.tiles[pos.x][pos.y + Math.ceil(dim.y / 2)] = mutated_tile(tile);
+      map.tiles[pos.x][pos.y + Math.ceil(dim.y / 2)].warp = new Warp(true, maps.length - 1, 'u');
+      newMap = maps[maps.length - 1];
+      newMap.tiles[newMap.start.x + 1][newMap.start.y] = mutated_tile(exit_warp);
+      newMap.tiles[newMap.start.x + 1][newMap.start.y].warp = new Warp(true, 0, 'd', new Point(pos.x + 1, pos.y + Math.ceil(dim.y / 2)));
+      lumber -= 10;
+      break;
+  }
+  draw();
+}
+
 
 function draw() {
   ctx.fillStyle = 'white';
@@ -567,8 +824,8 @@ function draw() {
   );
   ctx.fill();
   for(let p = 1; p <= 3; p++) {
-    for (let i = -(pos.x % 1) - 1; i < grid_x + 1; i++) {
-      for (let j = -(pos.y % 1) - 1; j < grid_y + 1; j++) {
+    for (let i = -(pos.x % 1) - 2; i < grid_x + 2; i++) {
+      for (let j = -(pos.y % 1) - 2; j < grid_y + 2; j++) {
         let x = Math.round(i - mid_x + pos.x);
         let y = Math.round(j - mid_y + pos.y);
         let tile;
@@ -594,18 +851,40 @@ function draw() {
   }
   lumberLabel.innerText = lumber;
   rocksLabel.innerText = rocks;
+  if(lumber >= 10){
+    if(woodHouseHolder.innerHTML == '') {
+      woodHouseHolder.innerHTML = `<button id="woodhouse">Wood Building</button>`;
+      woodHouseButton = document.getElementById('woodhouse');
+      woodHouseButton.addEventListener('click', function(e){
+        build(wood_house_warp);
+      });
+      woodHouseButton.addEventListener('focus', function(e){
+        woodHouseButton.blur();
+      });
+
+    }
+  }
+  else{
+    if(woodHouseHolder.innerHTML != '') {
+      woodHouseButton.remove();
+    }
+  }
 }
 
 
-
+/**@type {TypeMap}*/
 const seed = new TileMap(
   [
     [sand, sand, sand],
     [sand, grass, sand],
     [sand, sand, sand]
-  ]
+  ],
+  new Point()
 );
 
+
+
+/**@returns {TypeMap}*/
 function generateMap(/*Number*/ h, /*Number*/ w){
   let newMap = new TileMap();
   let area = Math.sqrt(w * h);
@@ -680,10 +959,10 @@ function generateMap(/*Number*/ h, /*Number*/ w){
           }
         }
         else{
-          grasses[grasses.length] = {
-            x: i,
-            y: j
-          }
+          grasses.push(new Point(
+            i,
+            j
+          ));
         }
 
       }
@@ -694,12 +973,9 @@ function generateMap(/*Number*/ h, /*Number*/ w){
   return newMap;
 }
 
-
-function action(){
-  var d = {
-    x: 0,
-    y: 0
-  };
+/**@returns {Point}*/
+function facing() {
+  let d = new Point();
   switch(direction){
     case 'u':
       d.x = -1;
@@ -713,10 +989,14 @@ function action(){
     case 'r':
       d.y = 1;
   }
-  let targetPos = {
-    x: pos.x + d.x,
-    y: pos.y + d.y
-  }
+  return new Point(
+    pos.x + d.x,
+    pos.y + d.y
+  );
+}
+
+function action(){
+  let targetPos = facing();
   switch(map.tiles[targetPos.x][targetPos.y].id){
     case 'grass_tree':
       map.tiles[targetPos.x][targetPos.y] = grass;
@@ -727,9 +1007,9 @@ function action(){
       lumber += 5;
       break;
     case 'water':
-      if(lumber > 0) {
+      if(lumber >= 2) {
         map.tiles[targetPos.x][targetPos.y] = bridge;
-        lumber--;
+        lumber -= 2;
       }
       break;
     case 'grass_rock':
@@ -752,36 +1032,63 @@ function action(){
         rocks--;
       }
       break;
+    case 'wood_floor':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = wood_floor_rock;
+        rocks--;
+      }
+      break;
+    case 'wood_floor_rock':
+      map.tiles[targetPos.x][targetPos.y] = wood_floor;
+      rocks++;
+      break;
+    case 'bridge':
+      map.tiles[targetPos.x][targetPos.y] = water;
+      lumber++;
+      break;
+    default:
+      if(map.tiles[targetPos.x][targetPos.y].warp.enabled && map.tiles[targetPos.x][targetPos.y].warp.direction.includes(direction)){
+        pos = new Point(map.tiles[targetPos.x][targetPos.y].warp.target);
+        map = maps[map.tiles[targetPos.x][targetPos.y].warp.map];
+      }
+      break;
   }
   draw();
 }
 
 
 
-
+/**@type {String}*/
 const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+/**@returns {Map<String, Number>}*/
 var reverseb64 = new Map();
 for(let i = 0; i < 64; i++){
   reverseb64.set(b64Str[i], i);
 }
 
-function int12_to_b64(int){
+/**@returns {String}*/
+function int12_to_b64(/*Number*/ int){
   return b64Str[Math.floor(int / 64)] + b64Str[int % 64]
 }
 
-function b642_to_int12(b64){
+/**@returns {Number}*/
+function b642_to_int12(/*String*/ b64){
   return reverseb64.get(b64[0]) * 64 + reverseb64.get(b64[1]);
 }
 
-function int6_to_b64(int){
+/**@returns {String}*/
+function int6_to_b64(/*Number*/ int){
   return b64Str[int]
 }
 
-function b641_to_int6(b64){
+/**@returns {Number}*/
+function b641_to_int6(/*String*/ b64){
   return reverseb64.get(b64[0]);
 }
 
-function compress_string(s){
+/**@returns {String}*/
+function compress_string(/*String*/ s){
   if(s[s.length - 1] == s[s.length - 2]){
     s += '=';
   }
@@ -813,7 +1120,8 @@ function compress_string(s){
   return s;
 }
 
-function decompress_string(s){
+/**@returns {String}*/
+function decompress_string(/*String*/ s){
   if(s[s.length - 1] == '='){
     s = s.substr(0, s.length - 1);
   }
@@ -878,6 +1186,7 @@ canvas.addEventListener('click', function(event){
   simulateKeypress(' ');
 });
 
+/**@returns {Boolean}*/
 function detectmob() {
   if(window.innerWidth <= 600) {
     return true;
@@ -902,8 +1211,8 @@ $(document).on('touchstart', function(e) {
 document.addEventListener('touchstart', handleTouchStart, false);
 document.addEventListener('touchmove', handleTouchMove, false);
 
-var xDown = null;
-var yDown = null;
+let xDown = null;
+let yDown = null;
 
 function getTouches(evt) {
   return evt.touches ||             // browser API
@@ -911,25 +1220,21 @@ function getTouches(evt) {
 }
 
 function handleTouchStart(evt) {
-  if (evt.target.nodeName !== 'INPUT') {
-    //evt.preventDefault();
-  }
   const firstTouch = getTouches(evt)[0];
   xDown = firstTouch.clientX;
   yDown = firstTouch.clientY;
 };
 
 function handleTouchMove(evt) {
-  //evt.preventDefault();
   if ( ! xDown || ! yDown ) {
     return;
   }
 
-  var xUp = evt.touches[0].clientX;
-  var yUp = evt.touches[0].clientY;
+  let xUp = evt.touches[0].clientX;
+  let yUp = evt.touches[0].clientY;
 
-  var xDiff = xDown - xUp;
-  var yDiff = yDown - yUp;
+  let xDiff = xDown - xUp;
+  let yDiff = yDown - yUp;
 
   if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {//most significant
     if ( xDiff > 0 ) {

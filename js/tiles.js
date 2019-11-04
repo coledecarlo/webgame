@@ -1,4 +1,4 @@
-const tiles_version = 13;
+const tiles_version = 14;
 
 
 
@@ -78,6 +78,7 @@ function rock_wash(i, dir) {
 
 
 
+/**@type {DecoPart}*/
 const leaves = new DecoPart(
   drawLeaves,
   2,
@@ -85,6 +86,8 @@ const leaves = new DecoPart(
   0.85,
   new Color('#00FF00')
 );
+
+/**@type {DecoPart}*/
 const trunk = new DecoPart(
   drawTrunk,
   1,
@@ -92,6 +95,8 @@ const trunk = new DecoPart(
   0.85,
   new Color('brown'),
 );
+
+/**@type {DecoPart}*/
 const big_leaves = new DecoPart(
   leaves.drawFun,
   3,
@@ -99,6 +104,8 @@ const big_leaves = new DecoPart(
   1.2,
   leaves.color
 );
+
+/**@type {DecoPart}*/
 const big_trunk = new DecoPart(
   trunk.drawFun,
   1,
@@ -106,6 +113,8 @@ const big_trunk = new DecoPart(
   1.2,
   trunk.color
 );
+
+/**@type {DecoPart}*/
 const null_leaves = new DecoPart(
   leaves.drawFun,
   -1,
@@ -113,6 +122,8 @@ const null_leaves = new DecoPart(
   0,
   leaves.color
 );
+
+/**@type {DecoPart}*/
 const null_trunk = new DecoPart(
   trunk.drawFun,
   -1,
@@ -122,68 +133,185 @@ const null_trunk = new DecoPart(
 );
 
 
+/**@type {Decoration}*/
 const rock = rock_wash(1, {
   x: 0,
   y: 1
 });
 
+/**@type {Decoration}*/
+const wood_house_base = new Decoration(
+  (x, y) => {
+    x *= grid_size;
+    y *= grid_size;
+    let color1 = '#CCAA77';
+    let color2 = 'brown';
+    let color3 = '#442200';
+    ctx.fillStyle = color2;
+    ctx.fillRect(y - grid_size, x - 3 * grid_size / 5, 3 * grid_size, 8 * grid_size / 5);
+    ctx.fillStyle = color1;
+    for(let i = 1; i < 5; i++){
+      ctx.fillRect(y - grid_size, x + (2 * i - 5) * grid_size / 5, 3 * grid_size, grid_size / 5);
+    }
+    ctx.fillStyle = color3;
+    ctx.fillRect(y - grid_size, x - 3 * grid_size / 5, grid_size / 5, 8 * grid_size / 5);
+    ctx.fillRect(y + 9 / 5 * grid_size, x - 3 * grid_size / 5, grid_size / 5, 8 * grid_size / 5);
+    ctx.fillRect(y + grid_size / 5, x + grid_size / 10, 3 * grid_size / 5, 9 * grid_size / 10);
+  },
+  1
+);
+
+/**@type {Decoration}*/
+const wood_house_roof = new Decoration(
+  (x, y) => {
+    x *= grid_size;
+    y *= grid_size;
+    let color1 = '#CCAA77';
+    let color2 = 'brown';
+    let color3 = '#442200';
+    ctx.fillStyle = color2;
+    let a = 17 / 6 / 5;
+    ctx.fillRect(y + (-6 / 5 + a) * grid_size, x - 4 * grid_size / 5, (17 / 5 - 2 * a) * grid_size, grid_size / 5);
+    ctx.fillStyle = color1;
+    a = 17 / 3 / 5;
+    ctx.fillRect(y + (-6 / 5 + a) * grid_size, x - 5 * grid_size / 5, (17 / 5 - 2 * a) * grid_size, grid_size / 5);
+    ctx.beginPath();
+    ctx.fillStyle = color3;
+    ctx.moveTo(y + grid_size / 2, x - 6 * grid_size / 5);
+    ctx.lineTo(y + 11 * grid_size / 5, x - 3 * grid_size / 5);
+    ctx.lineTo(y + 11 * grid_size / 5, x - 2 * grid_size / 5);
+    ctx.lineTo(y + grid_size / 2, x - 5 * grid_size / 5);
+    ctx.lineTo(y - 6 * grid_size / 5, x - 2 * grid_size / 5);
+    ctx.lineTo(y - 6 * grid_size / 5, x - 3 * grid_size / 5);
+    ctx.fill();
+  },
+  2
+);
+/**@type {Decoration}*/
+const exit_arrow = new Decoration(
+  (x, y) => {
+    x *= grid_size;
+    y *= grid_size;
+    let red = '#FF0000';
+    ctx.fillStyle = red;
+    ctx.fillRect(y + 2 * grid_size / 5, x + grid_size / 10, grid_size / 5, 3 * grid_size / 5);
+    ctx.beginPath();
+    ctx.moveTo(y + grid_size / 5, x + 7 * grid_size / 10);
+    ctx.lineTo(y + 4 * grid_size / 5, x + 7 * grid_size / 10);
+    ctx.lineTo(y + grid_size / 2, x + 9 * grid_size / 10);
+    ctx.fill();
+  },
+  -1
+);
 
 
 
+/**@type {Tile}*/
 const blank = new Tile(
   new Color('black'),
   false,
   'blank',
   []
 );
+
+/**@type {Tile}*/
 const grass = new Tile(
   new Color('#40FF50'),
   true,
   'grass',
   []
 );
+
+/**@type {Tile}*/
 const water = new Tile(
   new Color('#4050FF'),
   false,
   'water',
   []
 );
+
+/**@type {Tile}*/
 const sand = new Tile(
   new Color('#EAEA70'),
   true,
   'sand',
   []
 );
+
+/**@type {Tile}*/
 const bridge = new Tile(
   new Color('brown'),
   true,
   'bridge',
   []
 );
+
+/**@type {Tile}*/
 const grass_tree = new Tile(
   grass.color,
   false,
   'grass_tree',
   [trunk, leaves]
 );
+
+/**@type {Tile}*/
 const grass_big_tree = new Tile(
   grass.color,
   false,
   'grass_big_tree',
   [big_trunk, big_leaves]
 );
+
+/**@type {Tile}*/
 const grass_rock = new Tile(
   grass.color,
   false,
   'grass_rock',
   [rock]
 );
+
+/**@type {Tile}*/
 const sand_rock = new Tile(
   sand.color,
   false,
   'sand_rock',
   [rock]
 );
+
+/**@type {Tile}*/
+const wood_house_warp = new Tile(
+  blank.color,
+  false,
+  'wood_house_warp',
+  [wood_house_base, wood_house_roof],
+  new Warp(true)
+);
+
+/**@type {Tile}*/
+const exit_warp = new Tile(
+  blank.color,
+  false,
+  'exit_warp',
+  [exit_arrow],
+  new Warp(true)
+);
+
+/**@type {Tile}*/
+const wood_floor = new Tile(
+  new Color('brown'),
+  true,
+  'wood_floor',
+  []
+);
+
+/**@type {Tile}*/
+const wood_floor_rock = new Tile(
+  wood_floor.color,
+  false,
+  'wood_floor_rock',
+  [rock]
+);
+
 const tile_ref = [
   blank,
   grass,
@@ -193,7 +321,11 @@ const tile_ref = [
   grass_tree,
   grass_big_tree,
   sand_rock,
-  grass_rock
+  grass_rock,
+  wood_floor,
+  exit_warp,
+  wood_house_warp,
+  wood_floor_rock
 ];
 for(let i = 0; i < tile_ref.length; i++){
   tile_ref[i].add_int_id(i);
