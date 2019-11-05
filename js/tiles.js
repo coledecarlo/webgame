@@ -177,7 +177,7 @@ for(let i = 0; i < tile_ref.length; i++){
 
 
 
-/**@type {TypeMap}*/
+/**@type {TileMap}*/
 const seed = new TileMap(
   [
     [sand, sand , sand],
@@ -187,7 +187,7 @@ const seed = new TileMap(
   new Point()
 );
 
-/**@type {TypeMap}*/
+/**@type {TileMap}*/
 const wood_house_map = new TileMap(
   [
     [wood_floor, wood_floor, wood_floor, wood_floor, wood_floor],

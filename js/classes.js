@@ -139,7 +139,7 @@ class Warp{
   constructor(/*Boolean?*/ enabled, /*Number?*/ map, /*String?*/ direction, /*Point?*/ target){
     /**@type {Boolean}*/
     this.enabled = enabled || false;
-    /**@type {TileMap}*/
+    /**@type {Number}*/
     this.map = map || 0;
     /**@type {String}*/
     this.direction = direction || '';

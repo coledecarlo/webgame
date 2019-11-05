@@ -20,23 +20,19 @@
 /**@type {Boolean}*/ let moving    = false;
 /**@type {String }*/ let direction = 'u'  ;
 
-/**@type {HTMLCanvasElement}*/ const canvas          = document.getElementById('board'          );
-/**@type {HTMLInputElement }*/ const showLines       = document.getElementById('lines'          );
-/**@type {HTMLInputElement }*/ const heightField     = document.getElementById('height'         );
-/**@type {HTMLInputElement }*/ const widthField      = document.getElementById('width'          );
-/**@type {HTMLInputElement }*/ const gridField       = document.getElementById('gridsize'       );
-/**@type {HTMLElement      }*/ const lumberLabel     = document.getElementById('lumber'         );
-/**@type {HTMLElement      }*/ const rocksLabel      = document.getElementById('rocks'          );
-/**@type {HTMLButtonElement}*/ const setButton       = document.getElementById('set'            );
-/**@type {HTMLButtonElement}*/ const saveButton      = document.getElementById('save'           );
-/**@type {HTMLElement      }*/ const woodHouseHolder = document.getElementById('woodhouseholder');
-/**@type {HTMLInputElement }*/ const saveUrl         = document.getElementById('saveurl'        );
-/**@type {HTMLButtonElement}*/ const copyButton      = document.getElementById('copy'           );
-/**@type {HTMLElement      }*/ const logField        = document.getElementById('log'            );
-/**@type {HTMLButtonElement}*/ let   woodHouseButton                                                      ;
-//const saveCookieButton   = document.getElementById('savecookie'  );
-//const deleteCookieButton = document.getElementById('deletecookie');
-
+/**@type {HTMLCanvasElement}*/ const canvas          = /**@type {HTMLCanvasElement}*/ document.getElementById('board'          );
+/**@type {HTMLInputElement }*/ const showLines       = /**@type {HTMLInputElement }*/ document.getElementById('lines'          );
+/**@type {HTMLInputElement }*/ const heightField     = /**@type {HTMLInputElement }*/ document.getElementById('height'         );
+/**@type {HTMLInputElement }*/ const widthField      = /**@type {HTMLInputElement }*/ document.getElementById('width'          );
+/**@type {HTMLInputElement }*/ const gridField       = /**@type {HTMLInputElement }*/ document.getElementById('gridsize'       );
+/**@type {HTMLElement      }*/ const lumberLabel     = /**@type {HTMLElement      }*/ document.getElementById('lumber'         );
+/**@type {HTMLElement      }*/ const rocksLabel      = /**@type {HTMLElement      }*/ document.getElementById('rocks'          );
+/**@type {HTMLButtonElement}*/ const setButton       = /**@type {HTMLButtonElement}*/ document.getElementById('set'            );
+/**@type {HTMLButtonElement}*/ const saveButton      = /**@type {HTMLButtonElement}*/ document.getElementById('save'           );
+/**@type {HTMLElement      }*/ const woodHouseHolder = /**@type {HTMLElement      }*/ document.getElementById('woodhouseholder');
+/**@type {HTMLInputElement }*/ const saveUrl         = /**@type {HTMLInputElement }*/ document.getElementById('saveurl'        );
+/**@type {HTMLButtonElement}*/ const copyButton      = /**@type {HTMLButtonElement}*/ document.getElementById('copy'           );
+/**@type {HTMLButtonElement}*/ let   woodHouseButton                                                                                     ;
 
 
 setButton .addEventListener("click", function() {
@@ -60,8 +56,6 @@ copyButton.addEventListener("click", function() {
 
 document.addEventListener("keyup"  , onKeyup  );
 document.addEventListener("keydown", onKeydown);
-
-
 
 
 /**@returns {String}*/ function game_str(){
@@ -95,7 +89,7 @@ document.addEventListener("keydown", onKeydown);
   /**@type {Number}*/
   let curmap = 0;
   for(let k = 1; k < maps.length; k++){
-    if(map == maps[k]){
+    if(map === maps[k]){
       curmap = k;
     }
     s += int12_to_b64(maps[k].tiles.length);
@@ -122,29 +116,8 @@ document.addEventListener("keydown", onKeydown);
   return compress_string(s);
 }
 
-
-/**@returns {void}*/ function page_log(/*String*/ s){
-  logField.innerHTML =  logField.innerHTML + s;
-}
-/**@returns {void}*/ function page_log_clear(){
-  logField.innerHTML =  '';
-}
-
-
-
-/*
-saveCookieButton.addEventListener("click", function () {
-  setCookie('game', game_str(), 99999);
-  if(getCookie('game') == ''){
-    console.log("failed to set cookie");
-  }
-});
- */
-
-
-
 /**@returns {Boolean}*/ function is_mobile() {
-  return window.innerWidth <= 600;
+  return window.innerWidth <= 1024;
 }
 
 /**@returns {Promise}*/ function sleep(/*Number*/ ms) {
@@ -163,7 +136,7 @@ saveCookieButton.addEventListener("click", function () {
 }
 
 
-/**@type {Map<string, boolean>}*/ let keydown = new Map();
+/**@type {Map<String, Boolean>}*/ let keydown = new Map();
 /**@returns {void}*/ async function onKeyup(/*KeyboardEvent*/ event){
   switch (event.key) {
     case "ArrowDown":
@@ -183,7 +156,7 @@ saveCookieButton.addEventListener("click", function () {
       keydown.set('l', false);
       break;
   }
-};
+}
 /**@returns {void}*/ async function onKeydown(/*KeyboardEvent*/ event) {
   switch (event.key) {
     case "ArrowDown":
@@ -238,10 +211,10 @@ saveCookieButton.addEventListener("click", function () {
         newPos.y++;
         break;
     }
-    if (validatePos(newPos) == true) {
+    if (validatePos(newPos)) {
       /**@type {Array<Point>}*/
       let newTrees = [];
-      /**@type {Array<Object>}*/
+      /**@type {Array<{pos: Point, dir: Point}>}*/
       let newRocks = [];
       /**@type {Array<Point>}*/
       let growTrees = [];
@@ -251,14 +224,14 @@ saveCookieButton.addEventListener("click", function () {
         for (let j = Math.round(Math.max(0, pos.y - prox)); j < Math.min(map.tiles[0].length, pos.y + prox); j++) {
           /**@type {Number}*/
           let adjacent = 0;
-          if (map.tiles[i][j].id == 'grass' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
+          if (map.tiles[i][j].id === 'grass' && !(i === pos.x && j === pos.y) && !(i === newPos.x && j === newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
               for (let y = j - 1; y <= j + 1; y++) {
                 if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
-                  if (map.tiles[x][y].id == 'grass_tree') {
+                  if (map.tiles[x][y].id === 'grass_tree') {
                     adjacent++;
                   }
-                  if (map.tiles[x][y].id == 'grass_big_tree') {
+                  if (map.tiles[x][y].id === 'grass_big_tree') {
                     adjacent += 5;
                   }
                 }
@@ -271,12 +244,12 @@ saveCookieButton.addEventListener("click", function () {
           adjacent = 0;
           /**@type {Point}*/
           let dir = new Point();
-          if (map.tiles[i][j].id == 'sand' && !(i == pos.x && j == pos.y) && !(i == newPos.x && j == newPos.y)) {
+          if (map.tiles[i][j].id === 'sand' && !(i === pos.x && j === pos.y) && !(i === newPos.x && j === newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
               for (let y = j - 1; y <= j + 1; y++) {
                 if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
-                  if (map.tiles[x][y].id == 'water') {
-                    if ((x - i + y - j) % 2 != 0) {
+                  if (map.tiles[x][y].id === 'water') {
+                    if ((x - i + y - j) % 2 !== 0) {
                       adjacent++;
                       dir.x = x - i;
                       dir.y = y - j;
@@ -292,7 +265,7 @@ saveCookieButton.addEventListener("click", function () {
               dir: dir
             });
           }
-          if (map.tiles[i][j].id == 'grass_tree' && Math.random() < 0.0001) {
+          if (map.tiles[i][j].id === 'grass_tree' && Math.random() < 0.0001) {
             growTrees.push(new Point(i, j));
           }
         }
@@ -328,7 +301,7 @@ saveCookieButton.addEventListener("click", function () {
           map.tiles[ind.x][ind.y] = growTree;
         }
         for (let j = 0; j < newRocks.length; j++) {
-          /**@type {Object}*/
+          /**@type {{pos: Point, dir: Point}}*/
           let ind = newRocks[j];
           map.tiles[ind.pos.x][ind.pos.y] = mutated_tile(sand);
           map.tiles[ind.pos.x][ind.pos.y].deco[0] = rock_wash(i, ind.dir);
@@ -341,7 +314,7 @@ saveCookieButton.addEventListener("click", function () {
         map.tiles[ind.x][ind.y] = grass_tree;
       }
       for (let j = 0; j < newRocks.length; j++) {
-        /**@type {Object}*/
+        /**@type {{pos: Point, dir: Point}}*/
         let ind = newRocks[j];
         map.tiles[ind.pos.x][ind.pos.y] = sand_rock;
       }
@@ -362,7 +335,7 @@ saveCookieButton.addEventListener("click", function () {
   }
   while(keydown.get(direction));
   moving = false;
-};
+}
 /**@returns {Boolean}*/ function validatePos(/*Point*/ newPos){
   if(newPos.x < 0
     || newPos.y < 0
@@ -371,10 +344,8 @@ saveCookieButton.addEventListener("click", function () {
   ){
     return false;
   }
-  if(!map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land){
-    return false;
-  }
-  return true;
+  return map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land;
+
 }
 /**@returns {void}*/ function action(){
   /**@type {Point}*/
@@ -494,11 +465,11 @@ saveCookieButton.addEventListener("click", function () {
       if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
         tile = map.tiles[x][y];
       }
-      if(tile == undefined){
+      if(tile === undefined){
         tile = blank;
       }
       for(let k = 0; k < tile.deco.length; k++){
-        if(tile.deco[k].priority == -1) {
+        if(tile.deco[k].priority === -1) {
           tile.deco[k].draw(i, j);
         }
       }
@@ -549,11 +520,11 @@ saveCookieButton.addEventListener("click", function () {
         if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
           tile = map.tiles[x][y];
         }
-        if (tile == undefined) {
+        if (tile === undefined) {
           tile = blank;
         }
         for (let k = 0; k < tile.deco.length; k++) {
-          if (tile.deco[k].priority == p) {
+          if (tile.deco[k].priority === p) {
             tile.deco[k].draw(i, j);
           }
         }
@@ -569,9 +540,9 @@ saveCookieButton.addEventListener("click", function () {
   lumberLabel.innerText = lumber;
   rocksLabel.innerText = rocks;
   if(lumber >= 10){
-    if(woodHouseHolder.innerHTML == '') {
+    if(woodHouseHolder.innerHTML === '') {
       woodHouseHolder.innerHTML = `<button id="woodhouse">Wood Building</button>`;
-      woodHouseButton = document.getElementById('woodhouse');
+      woodHouseButton = /**@type {HTMLButtonElement}*/ document.getElementById('woodhouse');
       woodHouseButton.addEventListener('click', function(e){
         build(wood_house_warp);
       });
@@ -582,7 +553,7 @@ saveCookieButton.addEventListener("click", function () {
     }
   }
   else{
-    if(woodHouseHolder.innerHTML != '') {
+    if(woodHouseHolder.innerHTML !== '') {
       woodHouseButton.remove();
     }
   }
@@ -631,7 +602,7 @@ saveCookieButton.addEventListener("click", function () {
   });
   /**@type {HTMLElement}*/
   let htmlversion = document.getElementById('version');
-  if(parseInt(htmlversion.innerText) != version || classes_version != version || tiles_version != version){
+  if(parseInt(htmlversion.innerText) !== version || classes_version !== version || tiles_version !== version){
     htmlversion.innerText = 'Version error! Clear browser cache.';
   }
   /**@type {Boolean}*/
@@ -649,13 +620,13 @@ saveCookieButton.addEventListener("click", function () {
   else{
     /**@type {String}*/
     let cookie = getCookie('game');
-    if(cookie != ''){
+    if(cookie !== ''){
       init = true;
       s = decompress_string(cookie);
     }
   }
   if(init){
-    /**@type {Array<Object>>}*/
+    /**@type {Array<Object>}*/
     let warppts = [];
     /**@type {Number}*/
     let k = 0;
@@ -663,7 +634,7 @@ saveCookieButton.addEventListener("click", function () {
     k += 2;
     grid_y = b642_to_int12(s.substr(k, k + 2));
     k += 2;
-    lines = s[k] == 'B';
+    lines = s[k] === 'B';
     k += 1;
     /**@type {Number}*/
     let x = b642_to_int12(s.substr(k, k + 2));
@@ -780,6 +751,12 @@ saveCookieButton.addEventListener("click", function () {
     document.getElementById('desktoponly').remove();
     document.getElementById('dofoot').remove();
     canvas.setAttribute('style', 'right: 0%; position: relative; touch-action: none !important;');
+    grid_y = Math.floor(window.innerWidth / grid_size);
+    grid_y = Math.max(grid_y, 11);
+    grid_y = Math.min(grid_y, 19);
+    if(grid_y % 2 == 0){
+      grid_y--;
+    }
     grid_size = Math.ceil(window.innerWidth / grid_y);
     grid_x = Math.floor((window.innerHeight - 128) / grid_size);
   }
@@ -1024,11 +1001,6 @@ exterior.set(wood_house_warp, new Point(1, 3));
 
 
 
-
-
-
-
-
 /**@type {String}*/ const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 /**@type {Map<String, Number>}*/ let reverseb64 = new Map();
 for(let i = 0; i < 64; i++){
@@ -1113,8 +1085,6 @@ for(let i = 0; i < 64; i++){
 }
 
 
-
-
 /**@returns {void}*/ function setCookie(/*string*/ cname, /*String*/ cvalue, /*Number*/ exdays) {
   /**@type {Date}*/
   let d = new Date();
@@ -1133,10 +1103,10 @@ for(let i = 0; i < 64; i++){
   for(let i = 0; i < ca.length; i++) {
     /**@type {String}*/
     let c = ca[i];
-    while(c.charAt(0) == ' ') {
+    while(c.charAt(0) === ' ') {
       c = c.substring(1);
     }
-    if(c.indexOf(name) == 0) {
+    if(c.indexOf(name) === 0) {
       return c.substring(name.length, c.length);
     }
   }
@@ -1146,7 +1116,7 @@ for(let i = 0; i < 64; i++){
 
 
 
-/**@returns {void}*/ async function simulateKeypress(a){
+/**@returns {void}*/ async function simulateKeypress(/*String*/ a){
   onKeydown({
     key: a
   });
@@ -1190,8 +1160,7 @@ function handleTouchStart(evt) {
   const firstTouch = getTouches(evt)[0];
   xDown = firstTouch.clientX;
   yDown = firstTouch.clientY;
-};
-
+}
 function handleTouchMove(evt) {
   if ( ! xDown || ! yDown ) {
     return;
@@ -1219,5 +1188,5 @@ function handleTouchMove(evt) {
   // reset values
   xDown = null;
   yDown = null;
-};
+}
 
