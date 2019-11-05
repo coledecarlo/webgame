@@ -1,5 +1,4 @@
-/**@type {Number}*/
-const classes_version = 15;
+/**@type {Number}*/ const classes_version = 15;
 
 
 class Tile{

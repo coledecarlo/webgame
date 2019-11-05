@@ -1,70 +1,45 @@
-/**@type {Number}*/
-const version = 15;
+/**@type {Number}*/ const version = 15;
 
-/**@type {Array<TileMap>}*/
-let maps = [];
-/**@type {Point}*/
-let pos;
-/**@type {TileMap}*/
-let map;
-/**@type {Number}*/
-let grid_size = 60;
-/**@type {Number}*/
-let grid_x = 13;
-/**@type {Number}*/
-let grid_y = 23;
-/**@type {Number}*/
-let width;
-/**@type {Number}*/
-let height;
-/**@type {Number}*/
-let mid_x;
-/**@type {Number}*/
-let mid_y;
-/**@type {HTMLCanvasElement}*/
-const canvas = document.getElementById('board');
-/**@type {HTMLInputElement}*/
-const showLines = document.getElementById('lines');
-/**@type {HTMLInputElement}*/
-const heightField = document.getElementById('height');
-/**@type {HTMLInputElement}*/
-const widthField = document.getElementById('width');
-/**@type {HTMLInputElement}*/
-const gridField = document.getElementById('gridsize');
-/**@type {HTMLElement}*/
-const lumberLabel = document.getElementById('lumber');
-/**@type {HTMLElement}*/
-const rocksLabel = document.getElementById('rocks');
-/**@type {HTMLButtonElement}*/
-const setButton = document.getElementById('set');
-/**@type {HTMLButtonElement}*/
-const saveButton = document.getElementById('save');
-/**@type {HTMLElement}*/
-const woodHouseHolder = document.getElementById('woodhouseholder');
-/**@type {HTMLButtonElement}*/
-let woodHouseButton;
-//const saveCookieButton = document.getElementById('savecookie');
+
+/**@type {Array<TileMap>}*/ let maps = [];
+
+/**@type {CanvasRenderingContext2D}*/ let ctx;
+
+/**@type {Point  }*/ let pos              ;
+/**@type {TileMap}*/ let map              ;
+/**@type {Number }*/ let grid_size = 60   ;
+/**@type {Number }*/ let grid_x    = 13   ;
+/**@type {Number }*/ let grid_y    = 23   ;
+/**@type {Number }*/ let width            ;
+/**@type {Number }*/ let height           ;
+/**@type {Number }*/ let mid_x            ;
+/**@type {Number }*/ let mid_y            ;
+/**@type {Number }*/ let lumber    = 0    ;
+/**@type {Number }*/ let rocks     = 0    ;
+/**@type {Boolean}*/ let lines     = false;
+/**@type {Boolean}*/ let moving    = false;
+/**@type {String }*/ let direction = 'u'  ;
+
+/**@type {HTMLCanvasElement}*/ const canvas          = document.getElementById('board'          );
+/**@type {HTMLInputElement }*/ const showLines       = document.getElementById('lines'          );
+/**@type {HTMLInputElement }*/ const heightField     = document.getElementById('height'         );
+/**@type {HTMLInputElement }*/ const widthField      = document.getElementById('width'          );
+/**@type {HTMLInputElement }*/ const gridField       = document.getElementById('gridsize'       );
+/**@type {HTMLElement      }*/ const lumberLabel     = document.getElementById('lumber'         );
+/**@type {HTMLElement      }*/ const rocksLabel      = document.getElementById('rocks'          );
+/**@type {HTMLButtonElement}*/ const setButton       = document.getElementById('set'            );
+/**@type {HTMLButtonElement}*/ const saveButton      = document.getElementById('save'           );
+/**@type {HTMLElement      }*/ const woodHouseHolder = document.getElementById('woodhouseholder');
+/**@type {HTMLInputElement }*/ const saveUrl         = document.getElementById('saveurl'        );
+/**@type {HTMLButtonElement}*/ const copyButton      = document.getElementById('copy'           );
+/**@type {HTMLElement      }*/ const logField        = document.getElementById('log'            );
+/**@type {HTMLButtonElement}*/ let   woodHouseButton                                                      ;
+//const saveCookieButton   = document.getElementById('savecookie'  );
 //const deleteCookieButton = document.getElementById('deletecookie');
-/**@type {HTMLInputElement}*/
-const saveUrl = document.getElementById('saveurl');
-/**@type {HTMLButtonElement}*/
-const copyButton = document.getElementById('copy');
-/**@type {HTMLElement}*/
-const logField = document.getElementById('log');
-/**@type {Number}*/
-let lumber = 0;
-/**@type {Number}*/
-let rocks = 0;
-/**@type {Boolean}*/
-let lines = false;
-/**@type {String}*/
-let direction = 'u';
-/**@type {CanvasRenderingContext2D}*/
-let ctx;
-/**@type {Boolean}*/
-let moving = false;
 
-setButton.addEventListener("click", function () {
+
+
+setButton .addEventListener("click", function() {
   grid_x = parseInt(heightField.value);
   grid_y = parseInt(widthField.value);
   grid_size = parseInt(gridField.value);
@@ -72,11 +47,24 @@ setButton.addEventListener("click", function () {
   calculate();
   draw();
 });
+saveButton.addEventListener("click", function() {
+  /**@type {String}*/
+  let gs = game_str();
+  saveUrl.value = `coledecarlo.github.io/webgame/#${gs}`;
+  window.location = `#${gs}`;
+});
+copyButton.addEventListener("click", function() {
+  saveUrl.select();
+  document.execCommand('copy');
+});
+
+document.addEventListener("keyup"  , onKeyup  );
+document.addEventListener("keydown", onKeydown);
 
 
 
-/**@returns {String}*/
-function game_str(){
+
+/**@returns {String}*/ function game_str(){
   /**@type {String}*/
   let s = '';
   s += int12_to_b64(Math.round(grid_x));
@@ -135,22 +123,14 @@ function game_str(){
 }
 
 
-/**@returns {void}*/
-function page_log(/*String*/ s){
+/**@returns {void}*/ function page_log(/*String*/ s){
   logField.innerHTML =  logField.innerHTML + s;
 }
-
-/**@returns {void}*/
-function page_log_clear(){
+/**@returns {void}*/ function page_log_clear(){
   logField.innerHTML =  '';
 }
 
-saveButton.addEventListener("click", function() {
-  /**@type {String}*/
-  let gs = game_str();
-  saveUrl.value = `coledecarlo.github.io/webgame/#${gs}`;
-  window.location = `#${gs}`;
-});
+
 
 /*
 saveCookieButton.addEventListener("click", function () {
@@ -161,34 +141,17 @@ saveCookieButton.addEventListener("click", function () {
 });
  */
 
-copyButton.addEventListener("click", function() {
-  saveUrl.select();
-  document.execCommand('copy');
-});
 
 
-
-
-/**@returns {void}*/
-function calculate(){
-  width = grid_size * (grid_y + 0.1);
-  height = grid_size * (grid_x + 0.1);
-  mid_x = Math.floor(grid_x / 2);
-  mid_y = Math.floor(grid_y / 2);
-  canvas.width = width;
-  canvas.height = height;
+/**@returns {Boolean}*/ function is_mobile() {
+  return window.innerWidth <= 600;
 }
 
-
-
-
-/**@returns {Promise}*/
-function sleep(/*Number*/ ms) {
+/**@returns {Promise}*/ function sleep(/*Number*/ ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**@returns {Tile}*/
-function mutated_tile(/*Tile*/ tile) {
+/**@returns {Tile}*/ function mutated_tile(/*Tile*/ tile) {
   return new Tile(
     tile.color,
     tile.land,
@@ -199,13 +162,9 @@ function mutated_tile(/*Tile*/ tile) {
   );
 }
 
-/**@type {Map<string, boolean>}*/
-let keydown = new Map();
 
-
-document.addEventListener("keyup", onKeyup);
-/**@returns {void}*/
-async function onKeyup(/*KeyboardEvent*/ event){
+/**@type {Map<string, boolean>}*/ let keydown = new Map();
+/**@returns {void}*/ async function onKeyup(/*KeyboardEvent*/ event){
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -225,10 +184,7 @@ async function onKeyup(/*KeyboardEvent*/ event){
       break;
   }
 };
-
-document.addEventListener("keydown", onKeydown);
-/**@returns {void}*/
-async function onKeydown(/*KeyboardEvent*/ event) {
+/**@returns {void}*/ async function onKeydown(/*KeyboardEvent*/ event) {
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -407,10 +363,246 @@ async function onKeydown(/*KeyboardEvent*/ event) {
   while(keydown.get(direction));
   moving = false;
 };
+/**@returns {Boolean}*/ function validatePos(/*Point*/ newPos){
+  if(newPos.x < 0
+    || newPos.y < 0
+    || newPos.x >= map.tiles.length
+    || newPos.y >= map.tiles[0].length
+  ){
+    return false;
+  }
+  if(!map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land){
+    return false;
+  }
+  return true;
+}
+/**@returns {void}*/ function action(){
+  /**@type {Point}*/
+  let targetPos = facing();
+  switch(map.tiles[targetPos.x][targetPos.y].id){
+    case 'grass_tree':
+      map.tiles[targetPos.x][targetPos.y] = grass;
+      lumber++;
+      break;
+    case 'grass_big_tree':
+      map.tiles[targetPos.x][targetPos.y] = grass;
+      lumber += 5;
+      break;
+    case 'water':
+      if(lumber >= 2) {
+        map.tiles[targetPos.x][targetPos.y] = bridge;
+        lumber -= 2;
+      }
+      break;
+    case 'grass_rock':
+      map.tiles[targetPos.x][targetPos.y] = grass;
+      rocks++;
+      break;
+    case 'sand_rock':
+      map.tiles[targetPos.x][targetPos.y] = sand;
+      rocks++;
+      break;
+    case 'grass':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = grass_rock;
+        rocks--;
+      }
+      break;
+    case 'sand':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = sand_rock;
+        rocks--;
+      }
+      break;
+    case 'wood_floor':
+      if(rocks > 0) {
+        map.tiles[targetPos.x][targetPos.y] = wood_floor_rock;
+        rocks--;
+      }
+      break;
+    case 'wood_floor_rock':
+      map.tiles[targetPos.x][targetPos.y] = wood_floor;
+      rocks++;
+      break;
+    case 'bridge':
+      map.tiles[targetPos.x][targetPos.y] = water;
+      lumber++;
+      break;
+    default:
+      if(map.tiles[targetPos.x][targetPos.y].warp.enabled && map.tiles[targetPos.x][targetPos.y].warp.direction.includes(direction)){
+        pos = new Point(map.tiles[targetPos.x][targetPos.y].warp.target);
+        map = maps[map.tiles[targetPos.x][targetPos.y].warp.map];
+      }
+      break;
+  }
+  draw();
+}
+/**@returns {Point}*/ function facing() {
+  /**@type {Point}*/
+  let d = new Point();
+  switch(direction){
+    case 'u':
+      d.x = -1;
+      break;
+    case 'd':
+      d.x = 1;
+      break;
+    case 'l':
+      d.y = -1;
+      break;
+    case 'r':
+      d.y = 1;
+  }
+  return new Point(
+    pos.x + d.x,
+    pos.y + d.y
+  );
+}
 
 
-/**@returns {void}*/
-function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
+/**@returns {void}*/ function draw() {
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, width, height);
+  if(lines) {
+    drawLines();
+  }
+  for(let i = -(pos.x % 1); i < grid_x; i++){
+    for(let j = -(pos.y % 1); j < grid_y; j++){
+      /**@type {Number}*/
+      let x = Math.round(i - mid_x + pos.x);
+      /**@type {Number}*/
+      let y = Math.round(j - mid_y + pos.y);
+      /**@type {Tile}*/
+      let tile;
+      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
+        tile = map.tiles[x][y];
+      }
+      if(tile == undefined){
+        tile = blank;
+      }
+      fillTile(i, j, tile);
+    }
+  }
+  for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
+    for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
+      /**@type {Number}*/
+      let x = Math.round(i - mid_x + pos.x);
+      /**@type {Number}*/
+      let y = Math.round(j - mid_y + pos.y);
+      /**@type {Tile}*/
+      let tile;
+      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
+        tile = map.tiles[x][y];
+      }
+      if(tile == undefined){
+        tile = blank;
+      }
+      for(let k = 0; k < tile.deco.length; k++){
+        if(tile.deco[k].priority == -1) {
+          tile.deco[k].draw(i, j);
+        }
+      }
+    }
+  }
+  ctx.fillStyle = 'black';
+  ctx.beginPath();
+  ctx.arc(
+    (mid_y + 0.5) * grid_size,
+    (mid_x + 0.5) * grid_size,
+    grid_size * 0.3,
+    0,
+    2 * Math.PI
+  );
+  ctx.fill();
+  ctx.fillStyle = '#FF0000';
+  ctx.beginPath();
+  /**@type {Point}*/
+  let d = new Point();
+  switch(direction){
+    case 'u':
+      d.x = -0.3;
+      break;
+    case 'd':
+      d.x = 0.3;
+      break;
+    case 'l':
+      d.y = -0.3;
+      break;
+    case 'r':
+      d.y = 0.3;
+      break;
+  }
+  ctx.arc(
+    (mid_y + 0.5 + d.y) * grid_size,
+    (mid_x + 0.5 + d.x) * grid_size,
+    grid_size * 0.05,
+    0,
+    2 * Math.PI
+  );
+  ctx.fill();
+  for(let p = 1; p <= 3; p++) {
+    for (let i = -(pos.x % 1) - 2; i < grid_x + 2; i++) {
+      for (let j = -(pos.y % 1) - 2; j < grid_y + 2; j++) {
+        let x = Math.round(i - mid_x + pos.x);
+        let y = Math.round(j - mid_y + pos.y);
+        let tile;
+        if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+          tile = map.tiles[x][y];
+        }
+        if (tile == undefined) {
+          tile = blank;
+        }
+        for (let k = 0; k < tile.deco.length; k++) {
+          if (tile.deco[k].priority == p) {
+            tile.deco[k].draw(i, j);
+          }
+        }
+      }
+    }
+  }
+  ctx.fillStyle = 'white';
+  ctx.fillRect(grid_y * grid_size, 0, grid_size, height);
+  ctx.fillRect(0, grid_x * grid_size, width, grid_size);
+  if(!is_mobile()) {
+    ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
+  }
+  lumberLabel.innerText = lumber;
+  rocksLabel.innerText = rocks;
+  if(lumber >= 10){
+    if(woodHouseHolder.innerHTML == '') {
+      woodHouseHolder.innerHTML = `<button id="woodhouse">Wood Building</button>`;
+      woodHouseButton = document.getElementById('woodhouse');
+      woodHouseButton.addEventListener('click', function(e){
+        build(wood_house_warp);
+      });
+      woodHouseButton.addEventListener('focus', function(e){
+        woodHouseButton.blur();
+      });
+
+    }
+  }
+  else{
+    if(woodHouseHolder.innerHTML != '') {
+      woodHouseButton.remove();
+    }
+  }
+}
+/**@returns {void}*/ function drawLines(){
+  for (let i = -(pos.y % 1) * grid_size; i < width; i += grid_size) {
+    ctx.moveTo(i + 0.5, 0.5);
+    ctx.lineTo(i + 0.5, height - grid_size * 0.1 + 0.5);
+    ctx.stroke();
+  }
+  for (let i = -(pos.x % 1) * grid_size; i < height; i += grid_size) {
+    ctx.moveTo(0.5, i + 0.5);
+    ctx.lineTo(width - grid_size * 0.1 + 0.5, i + 0.5);
+    ctx.stroke();
+  }
+}
+/**@returns {void}*/ function fillTile(/*Number*/ x, /*Number*/ y, /*Tile*/ tile) {
+  fillTileColor(x, y, tile.color);
+}
+/**@returns {void}*/ function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
   ctx.fillStyle = color.to_string();
   if(lines) {
     ctx.fillRect(
@@ -429,28 +621,9 @@ function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
     );
   }
 }
-/**@returns {void}*/
-function fillTile(/*Number*/ x, /*Number*/ y, /*Tile*/ tile) {
-  fillTileColor(x, y, tile.color);
-}
 
-/**@returns {Boolean}*/
-function validatePos(/*Point*/ newPos){
-  if(newPos.x < 0
-  || newPos.y < 0
-  || newPos.x >= map.tiles.length
-  || newPos.y >= map.tiles[0].length
-  ){
-    return false;
-  }
-  if(!map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land){
-    return false;
-  }
-  return true;
-}
 
-/**@returns {void}*/
-function board() {
+/**@returns {void}*/ function board() {
   document.querySelectorAll("button").forEach( function(item) {
     item.addEventListener('focus', function() {
       this.blur();
@@ -600,7 +773,7 @@ function board() {
       map = maps[0];
     }
   }
-  if(detectmob()){
+  if(is_mobile()){
     grid_x = 19;
     grid_y = 11;
     grid_size = 30;
@@ -624,34 +797,113 @@ function board() {
     draw();
   }
 }
+/**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
+  /**@type {TileMap}*/
+  let newMap = new TileMap();
+  /**@type {Number}*/
+  let area = Math.sqrt(w * h);
+  for(let i = 0; i < h; i++){
+    newMap.tiles[i] = [];
+    for(let j = 0; j < w; j++){
+      newMap.tiles[i][j] = water;
+    }
+  }
+  for(let i = 0; i < h; i++){
+    for(let j = 0; j < w; j++){
+      if(Math.random() < 0.3 / area){
+        newMap.insertMapElement(seed, i - 1, j - 1);
+      }
+    }
+  }
+  for(let k = 0; k < Math.floor(area / 2); k++){
+    for(let i = 0; i < h; i++){
+      for(let j = 0; j < w; j++){
+        /**@type {Number}*/
+        let adjacent = 0;
+        if(newMap.tiles[i][j].id == 'water'){
+          for(let x = i - 1; x <= i + 1; x++){
+            for(let y = j - 1; y <= j + 1; y++){
+              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
+                if(newMap.tiles[x][y].id == 'sand'){
+                  adjacent++;
+                }
+              }
+            }
+          }
+        }
+        if(adjacent > 0 && Math.random() < (adjacent - 1) * 0.08){
+          newMap.tiles[i][j] = sand;
+        }
+      }
+    }
+  }
+  for(let k = 0; k < Math.floor(area / 2); k++){
+    for(let i = 0; i < h; i++){
+      for(let j = 0; j < w; j++){
+        /**@type {Number}*/
+        let adjacent = 0;
+        if(newMap.tiles[i][j].id == 'sand'){
+          for(let x = i - 1; x <= i + 1; x++){
+            for(let y = j - 1; y <= j + 1; y++){
+              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
+                if(newMap.tiles[x][y].id == 'grass'){
+                  adjacent++;
+                }
+                if(newMap.tiles[x][y].id == 'water'){
+                  adjacent -= 3;
+                }
+              }
+            }
+          }
+        }
+        if(adjacent > 0 && Math.random() < (adjacent + 1) * 0.08){
+          newMap.tiles[i][j] = grass;
+        }
+      }
+    }
+  }
+  /**@type {Array<Point>}*/
+  let grasses = [];
+  for(let i = 0; i < h; i++){
+    for(let j = 0; j < w; j++){
+      if(newMap.tiles[i][j].id == 'grass'){
+        if(Math.random() < 0.1){
+          if(Math.random() < 0.01){
+            newMap.tiles[i][j] = grass_big_tree;
+          }
+          else{
+            newMap.tiles[i][j] = grass_tree;
+          }
+        }
+        else{
+          grasses.push(new Point(i, j));
+        }
 
-/**@returns {void}*/
-function drawLines(){
-  for (let i = -(pos.y % 1) * grid_size; i < width; i += grid_size) {
-    ctx.moveTo(i + 0.5, 0.5);
-    ctx.lineTo(i + 0.5, height - grid_size * 0.1 + 0.5);
-    ctx.stroke();
+      }
+    }
   }
-  for (let i = -(pos.x % 1) * grid_size; i < height; i += grid_size) {
-    ctx.moveTo(0.5, i + 0.5);
-    ctx.lineTo(width - grid_size * 0.1 + 0.5, i + 0.5);
-    ctx.stroke();
-  }
+  newMap.start = grasses[Math.floor(Math.random() * grasses.length)];
+  newMap.time = 0;
+  return newMap;
+}
+/**@returns {void}*/ function calculate(){
+  width = grid_size * (grid_y + 0.1);
+  height = grid_size * (grid_x + 0.1);
+  mid_x = Math.floor(grid_x / 2);
+  mid_y = Math.floor(grid_y / 2);
+  canvas.width = width;
+  canvas.height = height;
 }
 
-/**@type {Map<Tile, TileMap>}*/
-let interior = new Map();
-
-/**@type {Map<Tile, Point>}*/
-let exterior = new Map();
 
 
-
+/**@type {Map<Tile, TileMap>}*/ let interior = new Map();
 interior.set(wood_house_warp, wood_house_map);
+
+/**@type {Map<Tile, Point>}*/ let exterior = new Map();
 exterior.set(wood_house_warp, new Point(1, 3));
 
-/**@returns {void}*/
-function build(/*Tile*/ tile) {
+/**@returns {void}*/ function build(/*Tile*/ tile) {
   if(map != maps[0]){
     return;
   }
@@ -769,341 +1021,34 @@ function build(/*Tile*/ tile) {
   draw();
 }
 
-/**@returns {void}*/
-function draw() {
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, width, height);
-  if(lines) {
-    drawLines();
-  }
-  for(let i = -(pos.x % 1); i < grid_x; i++){
-    for(let j = -(pos.y % 1); j < grid_y; j++){
-      /**@type {Number}*/
-      let x = Math.round(i - mid_x + pos.x);
-      /**@type {Number}*/
-      let y = Math.round(j - mid_y + pos.y);
-      /**@type {Tile}*/
-      let tile;
-      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[x][y];
-      }
-      if(tile == undefined){
-        tile = blank;
-      }
-      fillTile(i, j, tile);
-    }
-  }
-  for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
-    for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
-      /**@type {Number}*/
-      let x = Math.round(i - mid_x + pos.x);
-      /**@type {Number}*/
-      let y = Math.round(j - mid_y + pos.y);
-      /**@type {Tile}*/
-      let tile;
-      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[x][y];
-      }
-      if(tile == undefined){
-        tile = blank;
-      }
-      for(let k = 0; k < tile.deco.length; k++){
-        if(tile.deco[k].priority == -1) {
-          tile.deco[k].draw(i, j);
-        }
-      }
-    }
-  }
-  ctx.fillStyle = 'black';
-  ctx.beginPath();
-  ctx.arc(
-    (mid_y + 0.5) * grid_size,
-    (mid_x + 0.5) * grid_size,
-    grid_size * 0.3,
-    0,
-    2 * Math.PI
-  );
-  ctx.fill();
-  ctx.fillStyle = '#FF0000';
-  ctx.beginPath();
-  /**@type {Point}*/
-  let d = new Point();
-  switch(direction){
-    case 'u':
-      d.x = -0.3;
-      break;
-    case 'd':
-      d.x = 0.3;
-      break;
-    case 'l':
-      d.y = -0.3;
-      break;
-    case 'r':
-      d.y = 0.3;
-      break;
-  }
-  ctx.arc(
-    (mid_y + 0.5 + d.y) * grid_size,
-    (mid_x + 0.5 + d.x) * grid_size,
-    grid_size * 0.05,
-    0,
-    2 * Math.PI
-  );
-  ctx.fill();
-  for(let p = 1; p <= 3; p++) {
-    for (let i = -(pos.x % 1) - 2; i < grid_x + 2; i++) {
-      for (let j = -(pos.y % 1) - 2; j < grid_y + 2; j++) {
-        let x = Math.round(i - mid_x + pos.x);
-        let y = Math.round(j - mid_y + pos.y);
-        let tile;
-        if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
-          tile = map.tiles[x][y];
-        }
-        if (tile == undefined) {
-          tile = blank;
-        }
-        for (let k = 0; k < tile.deco.length; k++) {
-          if (tile.deco[k].priority == p) {
-            tile.deco[k].draw(i, j);
-          }
-        }
-      }
-    }
-  }
-  ctx.fillStyle = 'white';
-  ctx.fillRect(grid_y * grid_size, 0, grid_size, height);
-  ctx.fillRect(0, grid_x * grid_size, width, grid_size);
-  if(!detectmob()) {
-    ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
-  }
-  lumberLabel.innerText = lumber;
-  rocksLabel.innerText = rocks;
-  if(lumber >= 10){
-    if(woodHouseHolder.innerHTML == '') {
-      woodHouseHolder.innerHTML = `<button id="woodhouse">Wood Building</button>`;
-      woodHouseButton = document.getElementById('woodhouse');
-      woodHouseButton.addEventListener('click', function(e){
-        build(wood_house_warp);
-      });
-      woodHouseButton.addEventListener('focus', function(e){
-        woodHouseButton.blur();
-      });
-
-    }
-  }
-  else{
-    if(woodHouseHolder.innerHTML != '') {
-      woodHouseButton.remove();
-    }
-  }
-}
-
-/**@returns {TypeMap}*/
-function generateMap(/*Number*/ h, /*Number*/ w){
-  /**@type {TileMap}*/
-  let newMap = new TileMap();
-  /**@type {Number}*/
-  let area = Math.sqrt(w * h);
-  for(let i = 0; i < h; i++){
-    newMap.tiles[i] = [];
-    for(let j = 0; j < w; j++){
-      newMap.tiles[i][j] = water;
-    }
-  }
-  for(let i = 0; i < h; i++){
-    for(let j = 0; j < w; j++){
-      if(Math.random() < 0.3 / area){
-        newMap.insertMapElement(seed, i - 1, j - 1);
-      }
-    }
-  }
-  for(let k = 0; k < Math.floor(area / 2); k++){
-    for(let i = 0; i < h; i++){
-      for(let j = 0; j < w; j++){
-        /**@type {Number}*/
-        let adjacent = 0;
-        if(newMap.tiles[i][j].id == 'water'){
-          for(let x = i - 1; x <= i + 1; x++){
-            for(let y = j - 1; y <= j + 1; y++){
-              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
-                if(newMap.tiles[x][y].id == 'sand'){
-                  adjacent++;
-                }
-              }
-            }
-          }
-        }
-        if(adjacent > 0 && Math.random() < (adjacent - 1) * 0.08){
-          newMap.tiles[i][j] = sand;
-        }
-      }
-    }
-  }
-  for(let k = 0; k < Math.floor(area / 2); k++){
-    for(let i = 0; i < h; i++){
-      for(let j = 0; j < w; j++){
-        /**@type {Number}*/
-        let adjacent = 0;
-        if(newMap.tiles[i][j].id == 'sand'){
-          for(let x = i - 1; x <= i + 1; x++){
-            for(let y = j - 1; y <= j + 1; y++){
-              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
-                if(newMap.tiles[x][y].id == 'grass'){
-                  adjacent++;
-                }
-                if(newMap.tiles[x][y].id == 'water'){
-                  adjacent -= 3;
-                }
-              }
-            }
-          }
-        }
-        if(adjacent > 0 && Math.random() < (adjacent + 1) * 0.08){
-          newMap.tiles[i][j] = grass;
-        }
-      }
-    }
-  }
-  /**@type {Array<Point>}*/
-  let grasses = [];
-  for(let i = 0; i < h; i++){
-    for(let j = 0; j < w; j++){
-      if(newMap.tiles[i][j].id == 'grass'){
-        if(Math.random() < 0.1){
-          if(Math.random() < 0.01){
-            newMap.tiles[i][j] = grass_big_tree;
-          }
-          else{
-            newMap.tiles[i][j] = grass_tree;
-          }
-        }
-        else{
-          grasses.push(new Point(i, j));
-        }
-
-      }
-    }
-  }
-  newMap.start = grasses[Math.floor(Math.random() * grasses.length)];
-  newMap.time = 0;
-  return newMap;
-}
-
-/**@returns {Point}*/
-function facing() {
-  /**@type {Point}*/
-  let d = new Point();
-  switch(direction){
-    case 'u':
-      d.x = -1;
-      break;
-    case 'd':
-      d.x = 1;
-      break;
-    case 'l':
-      d.y = -1;
-      break;
-    case 'r':
-      d.y = 1;
-  }
-  return new Point(
-    pos.x + d.x,
-    pos.y + d.y
-  );
-}
-
-/**@returns {void}*/
-function action(){
-  /**@type {Point}*/
-  let targetPos = facing();
-  switch(map.tiles[targetPos.x][targetPos.y].id){
-    case 'grass_tree':
-      map.tiles[targetPos.x][targetPos.y] = grass;
-      lumber++;
-      break;
-    case 'grass_big_tree':
-      map.tiles[targetPos.x][targetPos.y] = grass;
-      lumber += 5;
-      break;
-    case 'water':
-      if(lumber >= 2) {
-        map.tiles[targetPos.x][targetPos.y] = bridge;
-        lumber -= 2;
-      }
-      break;
-    case 'grass_rock':
-      map.tiles[targetPos.x][targetPos.y] = grass;
-      rocks++;
-      break;
-    case 'sand_rock':
-      map.tiles[targetPos.x][targetPos.y] = sand;
-      rocks++;
-      break;
-    case 'grass':
-      if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = grass_rock;
-        rocks--;
-      }
-      break;
-    case 'sand':
-      if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = sand_rock;
-        rocks--;
-      }
-      break;
-    case 'wood_floor':
-      if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = wood_floor_rock;
-        rocks--;
-      }
-      break;
-    case 'wood_floor_rock':
-      map.tiles[targetPos.x][targetPos.y] = wood_floor;
-      rocks++;
-      break;
-    case 'bridge':
-      map.tiles[targetPos.x][targetPos.y] = water;
-      lumber++;
-      break;
-    default:
-      if(map.tiles[targetPos.x][targetPos.y].warp.enabled && map.tiles[targetPos.x][targetPos.y].warp.direction.includes(direction)){
-        pos = new Point(map.tiles[targetPos.x][targetPos.y].warp.target);
-        map = maps[map.tiles[targetPos.x][targetPos.y].warp.map];
-      }
-      break;
-  }
-  draw();
-}
 
 
 
-/**@type {String}*/
-const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-/**@type {Map<String, Number>}*/
-let reverseb64 = new Map();
+
+
+
+
+
+/**@type {String}*/ const b64Str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+/**@type {Map<String, Number>}*/ let reverseb64 = new Map();
 for(let i = 0; i < 64; i++){
   reverseb64.set(b64Str[i], i);
 }
 
-/**@returns {String}*/
-function int12_to_b64(/*Number*/ int){
+/**@returns {String}*/ function int12_to_b64(/*Number*/ int){
   return b64Str[Math.floor(int / 64)] + b64Str[int % 64]
 }
-/**@returns {Number}*/
-function b642_to_int12(/*String*/ b64){
+/**@returns {Number}*/ function b642_to_int12(/*String*/ b64){
   return reverseb64.get(b64[0]) * 64 + reverseb64.get(b64[1]);
 }
-/**@returns {String}*/
-function int6_to_b64(/*Number*/ int){
+/**@returns {String}*/ function int6_to_b64(/*Number*/ int){
   return b64Str[int]
 }
-/**@returns {Number}*/
-function b641_to_int6(/*String*/ b64){
+/**@returns {Number}*/ function b641_to_int6(/*String*/ b64){
   return reverseb64.get(b64[0]);
 }
 
-/**@returns {String}*/
-function compress_string(/*String*/ s){
+/**@returns {String}*/ function compress_string(/*String*/ s){
   if(s[s.length - 1] == s[s.length - 2]){
     s += '=';
   }
@@ -1137,8 +1082,7 @@ function compress_string(/*String*/ s){
   }
   return s;
 }
-/**@returns {String}*/
-function decompress_string(/*String*/ s){
+/**@returns {String}*/ function decompress_string(/*String*/ s){
   if(s[s.length - 1] == '='){
     s = s.substr(0, s.length - 1);
   }
@@ -1168,8 +1112,10 @@ function decompress_string(/*String*/ s){
   return s;
 }
 
-/**@returns {void}*/
-function setCookie(/*string*/ cname, /*String*/ cvalue, /*Number*/ exdays) {
+
+
+
+/**@returns {void}*/ function setCookie(/*string*/ cname, /*String*/ cvalue, /*Number*/ exdays) {
   /**@type {Date}*/
   let d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -1177,8 +1123,7 @@ function setCookie(/*string*/ cname, /*String*/ cvalue, /*Number*/ exdays) {
   let expires = `expires=${d.toUTCString()}`;
   document.cookie = `${cname}=${cvalue};${expires};path=/`;
 }
-/**@returns {String}*/
-function getCookie(/*String*/ cname) {
+/**@returns {String}*/ function getCookie(/*String*/ cname) {
   /**@type {String}*/
   let name = `${cname}=`;
   /**@type {String}*/
@@ -1201,8 +1146,7 @@ function getCookie(/*String*/ cname) {
 
 
 
-/**@returns {void}*/
-async function simulateKeypress(a){
+/**@returns {void}*/ async function simulateKeypress(a){
   onKeydown({
     key: a
   });
@@ -1216,14 +1160,7 @@ canvas.addEventListener('click', function(event){
   simulateKeypress(' ');
 });
 
-/**@returns {Boolean}*/
-function detectmob() {
-  if(window.innerWidth <= 600) {
-    return true;
-  } else {
-    return false;
-  }
-}
+
 
 $(document).on('touchmove', function(e) {
   e.preventDefault();
