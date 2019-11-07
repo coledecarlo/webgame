@@ -35,6 +35,7 @@
 /**@type {HTMLButtonElement}*/ let   woodHouseButton                                                                                     ;
 
 
+
 setButton .addEventListener("click", function() {
   grid_x = parseInt(heightField.value);
   grid_y = parseInt(widthField.value);
@@ -64,12 +65,12 @@ document.addEventListener("keydown", onKeydown);
   s += int12_to_b64(Math.round(grid_x));
   s += int12_to_b64(Math.round(grid_y));
   s += lines? "B": "A";
-  s += int12_to_b64(maps[0].tiles.length);
-  s += int12_to_b64(maps[0].tiles[0].length);
+  s += int12_to_b64(maps[0].height());
+  s += int12_to_b64(maps[0].width());
   /**@type {Array<Warp>}*/
   let warps = [];
-  for(let i = 0; i < maps[0].tiles.length; i++){
-    for(let j = 0; j < maps[0].tiles[0].length; j++){
+  for(let i = 0; i < maps[0].height(); i++){
+    for(let j = 0; j < maps[0].width(); j++){
       s += int6_to_b64(maps[0].tiles[i][j].mutating.int_id);
       if(maps[0].tiles[i][j].warp.enabled){
         warps.push(maps[0].tiles[i][j].warp);
@@ -92,10 +93,10 @@ document.addEventListener("keydown", onKeydown);
     if(map === maps[k]){
       curmap = k;
     }
-    s += int12_to_b64(maps[k].tiles.length);
-    s += int12_to_b64(maps[k].tiles[0].length);
-    for(let i = 0; i < maps[k].tiles.length; i++){
-      for(let j = 0; j < maps[k].tiles[0].length; j++){
+    s += int12_to_b64(maps[k].height());
+    s += int12_to_b64(maps[k].width());
+    for(let i = 0; i < maps[k].height(); i++){
+      for(let j = 0; j < maps[k].width(); j++){
         s += int6_to_b64(maps[k].tiles[i][j].mutating.int_id);
         if(maps[k].tiles[i][j].warp.enabled){
           warps.push(maps[k].tiles[i][j].warp);
@@ -135,9 +136,13 @@ document.addEventListener("keydown", onKeydown);
   );
 }
 
+/**@returns {Number}*/ function rng() {
+  return Math.random();
+}
+
 
 /**@type {Map<String, Boolean>}*/ let keydown = new Map();
-/**@returns {void}*/ async function onKeyup(/*KeyboardEvent*/ event){
+/**@returns {void}*/ async function onKeyup(/*{key: String}*/ event){
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -157,7 +162,7 @@ document.addEventListener("keydown", onKeydown);
       break;
   }
 }
-/**@returns {void}*/ async function onKeydown(/*KeyboardEvent*/ event) {
+/**@returns {void}*/ async function onKeydown(/*{key: String}*/ event) {
   switch (event.key) {
     case "ArrowDown":
     case "s":
@@ -220,14 +225,14 @@ document.addEventListener("keydown", onKeydown);
       let growTrees = [];
       /**@type {Number}*/
       let prox = 10;
-      for (let i = Math.round(Math.max(0, pos.x - prox)); i < Math.min(map.tiles.length, pos.x + prox); i++) {
-        for (let j = Math.round(Math.max(0, pos.y - prox)); j < Math.min(map.tiles[0].length, pos.y + prox); j++) {
+      for (let i = Math.round(Math.max(0, pos.x - prox)); i < Math.min(map.height(), pos.x + prox); i++) {
+        for (let j = Math.round(Math.max(0, pos.y - prox)); j < Math.min(map.width(), pos.y + prox); j++) {
           /**@type {Number}*/
           let adjacent = 0;
           if (map.tiles[i][j].id === 'grass' && !(i === pos.x && j === pos.y) && !(i === newPos.x && j === newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
               for (let y = j - 1; y <= j + 1; y++) {
-                if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+                if(x >= 0 && x < map.height() && y >= 0 && y < map.width()) {
                   if (map.tiles[x][y].id === 'grass_tree') {
                     adjacent++;
                   }
@@ -238,7 +243,7 @@ document.addEventListener("keydown", onKeydown);
               }
             }
           }
-          if (Math.random() < (adjacent * 0.0005)) {
+          if (rng() < (adjacent * 0.0005)) {
             newTrees.push(new Point(i, j));
           }
           adjacent = 0;
@@ -247,7 +252,7 @@ document.addEventListener("keydown", onKeydown);
           if (map.tiles[i][j].id === 'sand' && !(i === pos.x && j === pos.y) && !(i === newPos.x && j === newPos.y)) {
             for (let x = i - 1; x <= i + 1; x++) {
               for (let y = j - 1; y <= j + 1; y++) {
-                if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
+                if(x >= 0 && x < map.height() && y >= 0 && y < map.width()) {
                   if (map.tiles[x][y].id === 'water') {
                     if ((x - i + y - j) % 2 !== 0) {
                       adjacent++;
@@ -259,13 +264,13 @@ document.addEventListener("keydown", onKeydown);
               }
             }
           }
-          if (Math.random() < (adjacent * 0.001)) {
+          if (rng() < (adjacent * 0.001)) {
             newRocks.push({
               pos: new Point(i, j),
               dir: dir
             });
           }
-          if (map.tiles[i][j].id === 'grass_tree' && Math.random() < 0.0001) {
+          if (map.tiles[i][j].id === 'grass_tree' && rng() < 0.0001) {
             growTrees.push(new Point(i, j));
           }
         }
@@ -303,28 +308,21 @@ document.addEventListener("keydown", onKeydown);
         for (let j = 0; j < newRocks.length; j++) {
           /**@type {{pos: Point, dir: Point}}*/
           let ind = newRocks[j];
-          map.tiles[ind.pos.x][ind.pos.y] = mutated_tile(sand);
-          map.tiles[ind.pos.x][ind.pos.y].deco[0] = rock_wash(i, ind.dir);
+          map.setTile(ind.pos, mutated_tile(sand));
+          map.getTile(ind.pos).deco[0] = rock_wash(i, ind.dir);
         }
         draw();
       }
       for (let j = 0; j < newTrees.length; j++) {
-        /**@type {Point}*/
-        let ind = newTrees[j];
-        map.tiles[ind.x][ind.y] = grass_tree;
+        map.setTile(newTrees[j], grass_tree);
       }
       for (let j = 0; j < newRocks.length; j++) {
-        /**@type {{pos: Point, dir: Point}}*/
-        let ind = newRocks[j];
-        map.tiles[ind.pos.x][ind.pos.y] = sand_rock;
+        map.setTile(newRocks[j].pos, sand_rock);
       }
       for (let j = 0; j < growTrees.length; j++) {
-        /**@type {Point}*/
-        let ind = growTrees[j];
-        map.tiles[ind.x][ind.y] = grass_big_tree;
+        map.setTile(growTrees[j], grass_big_tree);
       }
-      pos.x = Math.round(pos.x);
-      pos.y = Math.round(pos.y);
+      pos.round();
       map.time = Math.round(map.time) % 4096;
     }
     else{
@@ -339,70 +337,79 @@ document.addEventListener("keydown", onKeydown);
 /**@returns {Boolean}*/ function validatePos(/*Point*/ newPos){
   if(newPos.x < 0
     || newPos.y < 0
-    || newPos.x >= map.tiles.length
-    || newPos.y >= map.tiles[0].length
+    || newPos.x >= map.height()
+    || newPos.y >= map.width()
   ){
     return false;
   }
-  return map.tiles[Math.round(newPos.x)][Math.round(newPos.y)].land;
-
+  return map.getTile(newPos.round()).land;
 }
 /**@returns {void}*/ function action(){
   /**@type {Point}*/
   let targetPos = facing();
-  switch(map.tiles[targetPos.x][targetPos.y].id){
+  switch(map.getTile(targetPos).id){
     case 'grass_tree':
-      map.tiles[targetPos.x][targetPos.y] = grass;
+      map.setTile(targetPos, grass);
       lumber++;
       break;
     case 'grass_big_tree':
-      map.tiles[targetPos.x][targetPos.y] = grass;
+      map.setTile(targetPos, grass);
       lumber += 5;
       break;
     case 'water':
       if(lumber >= 2) {
-        map.tiles[targetPos.x][targetPos.y] = bridge;
+        map.setTile(targetPos, bridge);
+        decorateTiles(
+          new Point(Math.max(0, targetPos.x - 1), Math.max(0, targetPos.y - 1)),
+          new Point(Math.min(map.height(), targetPos.x + 2), Math.min(map.width(), targetPos.y + 2))
+        );
         lumber -= 2;
       }
       break;
     case 'grass_rock':
-      map.tiles[targetPos.x][targetPos.y] = grass;
+      map.setTile(targetPos, grass);
       rocks++;
       break;
     case 'sand_rock':
-      map.tiles[targetPos.x][targetPos.y] = sand;
+      map.setTile(targetPos, sand);
       rocks++;
       break;
     case 'grass':
       if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = grass_rock;
+        map.setTile(targetPos, grass_rock);
         rocks--;
       }
       break;
     case 'sand':
       if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = sand_rock;
+        map.setTile(targetPos, sand_rock);
         rocks--;
       }
       break;
     case 'wood_floor':
       if(rocks > 0) {
-        map.tiles[targetPos.x][targetPos.y] = wood_floor_rock;
+        map.setTile(targetPos, wood_floor_rock);
         rocks--;
       }
       break;
     case 'wood_floor_rock':
-      map.tiles[targetPos.x][targetPos.y] = wood_floor;
+      map.setTile(targetPos, wood_floor);
       rocks++;
       break;
     case 'bridge':
-      map.tiles[targetPos.x][targetPos.y] = water;
+    case 'mutated_bridge':
+      map.setTile(targetPos, water);
+      decorateTiles(
+        new Point(Math.max(0, targetPos.x - 1), Math.max(0, targetPos.y - 1)),
+        new Point(Math.min(map.height(), targetPos.x + 2), Math.min(map.width(), targetPos.y + 2))
+      );
       lumber++;
       break;
     default:
-      if(map.tiles[targetPos.x][targetPos.y].warp.enabled && map.tiles[targetPos.x][targetPos.y].warp.direction.includes(direction)){
-        pos = new Point(map.tiles[targetPos.x][targetPos.y].warp.target);
-        map = maps[map.tiles[targetPos.x][targetPos.y].warp.map];
+      /**@type {Tile}*/ let target = map.getTile(targetPos);
+      if(target.warp.enabled && target.warp.direction === direction){
+        pos = new Point(target.warp.target);
+        map = maps[target.warp.map];
       }
       break;
   }
@@ -427,7 +434,7 @@ document.addEventListener("keydown", onKeydown);
   return new Point(
     pos.x + d.x,
     pos.y + d.y
-  );
+  ).round();
 }
 
 
@@ -435,39 +442,20 @@ document.addEventListener("keydown", onKeydown);
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, width, height);
   if(lines) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'black';
     drawLines();
   }
   for(let i = -(pos.x % 1); i < grid_x; i++){
     for(let j = -(pos.y % 1); j < grid_y; j++){
-      /**@type {Number}*/
-      let x = Math.round(i - mid_x + pos.x);
-      /**@type {Number}*/
-      let y = Math.round(j - mid_y + pos.y);
-      /**@type {Tile}*/
-      let tile;
-      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[x][y];
-      }
-      if(tile == undefined){
-        tile = blank;
-      }
-      fillTile(i, j, tile);
+      /**@type {Point}*/ let target = new Point(i - mid_x + pos.x, j - mid_y + pos.y).round();
+      fillTile(i, j, (target.x >= 0 && target.x < map.height() && target.y >= 0 && target.y < map.width())? map.getTile(target): blank);
     }
   }
   for(let i = -(pos.x % 1) - 1; i < grid_x + 1; i++){
     for(let j = -(pos.y % 1) - 1; j < grid_y + 1; j++){
-      /**@type {Number}*/
-      let x = Math.round(i - mid_x + pos.x);
-      /**@type {Number}*/
-      let y = Math.round(j - mid_y + pos.y);
-      /**@type {Tile}*/
-      let tile;
-      if(x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length){
-        tile = map.tiles[x][y];
-      }
-      if(tile === undefined){
-        tile = blank;
-      }
+      /**@type {Point}*/ let target = new Point(i - mid_x + pos.x, j - mid_y + pos.y).round();
+      /**@type {Tile}*/ let tile = (target.x >= 0 && target.x < map.height() && target.y >= 0 && target.y < map.width())? map.getTile(target): blank;
       for(let k = 0; k < tile.deco.length; k++){
         if(tile.deco[k].priority === -1) {
           tile.deco[k].draw(i, j);
@@ -487,8 +475,7 @@ document.addEventListener("keydown", onKeydown);
   ctx.fill();
   ctx.fillStyle = '#FF0000';
   ctx.beginPath();
-  /**@type {Point}*/
-  let d = new Point();
+  /**@type {Point}*/ let d = new Point();
   switch(direction){
     case 'u':
       d.x = -0.3;
@@ -514,17 +501,10 @@ document.addEventListener("keydown", onKeydown);
   for(let p = 1; p <= 3; p++) {
     for (let i = -(pos.x % 1) - 2; i < grid_x + 2; i++) {
       for (let j = -(pos.y % 1) - 2; j < grid_y + 2; j++) {
-        let x = Math.round(i - mid_x + pos.x);
-        let y = Math.round(j - mid_y + pos.y);
-        let tile;
-        if (x >= 0 && x < map.tiles.length && y >= 0 && y < map.tiles[0].length) {
-          tile = map.tiles[x][y];
-        }
-        if (tile === undefined) {
-          tile = blank;
-        }
-        for (let k = 0; k < tile.deco.length; k++) {
-          if (tile.deco[k].priority === p) {
+        /**@type {Point}*/ let target = new Point(i - mid_x + pos.x, j - mid_y + pos.y).round();
+        /**@type {Tile}*/ let tile = (target.x >= 0 && target.x < map.height() && target.y >= 0 && target.y < map.width())? map.getTile(target): blank;
+        for(let k = 0; k < tile.deco.length; k++){
+          if(tile.deco[k].priority === p) {
             tile.deco[k].draw(i, j);
           }
         }
@@ -535,10 +515,12 @@ document.addEventListener("keydown", onKeydown);
   ctx.fillRect(grid_y * grid_size, 0, grid_size, height);
   ctx.fillRect(0, grid_x * grid_size, width, grid_size);
   if(!is_mobile()) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'black';
     ctx.strokeRect(0.5, 0.5, grid_y * grid_size, grid_x * grid_size);
   }
-  lumberLabel.innerText = lumber;
-  rocksLabel.innerText = rocks;
+  lumberLabel.innerText = lumber.toString();
+  rocksLabel.innerText = rocks.toString();
   if(lumber >= 10){
     if(woodHouseHolder.innerHTML === '') {
       woodHouseHolder.innerHTML = `<button id="woodhouse">Wood Building</button>`;
@@ -574,7 +556,7 @@ document.addEventListener("keydown", onKeydown);
   fillTileColor(x, y, tile.color);
 }
 /**@returns {void}*/ function fillTileColor(/*Number*/ x, /*Number*/ y, /*Color*/ color) {
-  ctx.fillStyle = color.to_string();
+  ctx.fillStyle = color.toString();
   if(lines) {
     ctx.fillRect(
       y * grid_size + 1,
@@ -592,6 +574,44 @@ document.addEventListener("keydown", onKeydown);
     );
   }
 }
+/**@returns {void}*/ function decorateTiles(/*Point*/ from, /*Point*/ to){
+  for(let i = from.x; i < to.x; i++){
+    for(let j = from.y; j < to.y; j++){
+      switch(map.tiles[i][j].id){
+        case 'bridge':
+          map.tiles[i][j] = mutated_tile(map.tiles[i][j]);
+          if(i - 1 >= 0 && map.tiles[i - 1][j].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_up);
+          }
+          if(i + 1 < map.height() && map.tiles[i + 1][j].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_down);
+          }
+          if(j - 1 >= 0 && map.tiles[i][j - 1].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_left);
+          }
+          if(j + 1 < map.width() && map.tiles[i][j + 1].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_right);
+          }
+          break;
+        case 'mutated_bridge':
+          map.tiles[i][j].deco = [];
+          if(i - 1 >= 0 && map.tiles[i - 1][j].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_up);
+          }
+          if(i + 1 < map.height() && map.tiles[i + 1][j].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_down);
+          }
+          if(j - 1 >= 0 && map.tiles[i][j - 1].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_left);
+          }
+          if(j + 1 < map.width() && map.tiles[i][j + 1].id === 'water'){
+            map.tiles[i][j].deco.push(bridge_rail_right);
+          }
+          break;
+      }
+    }
+  }
+}
 
 
 /**@returns {void}*/ function board() {
@@ -600,50 +620,39 @@ document.addEventListener("keydown", onKeydown);
       this.blur();
     });
   });
-  /**@type {HTMLElement}*/
-  let htmlversion = document.getElementById('version');
+  /**@type {HTMLElement}*/ let htmlversion = document.getElementById('version');
   if(parseInt(htmlversion.innerText) !== version || classes_version !== version || tiles_version !== version){
     htmlversion.innerText = 'Version error! Clear browser cache.';
   }
-  /**@type {Boolean}*/
-  let init = false;
-  /**@type {String}*/
-  let url = window.location.href;
-  /**@type {Number}*/
-  let poss = url.indexOf('#') + 1;
-  /**@type {String}*/
-  let s = '';
+  /**@type {Boolean}*/ let init = false;
+  /**@type {String}*/ let url = window.location.href;
+  /**@type {Number}*/ let poss = url.indexOf('#') + 1;
+  /**@type {String}*/ let s = '';
   if(poss > 0){
     init = true;
     s = decompress_string(url.substr(poss));
   }
   else{
-    /**@type {String}*/
-    let cookie = getCookie('game');
+    /**@type {String}*/ let cookie = getCookie('game');
     if(cookie !== ''){
       init = true;
       s = decompress_string(cookie);
     }
   }
   if(init){
-    /**@type {Array<Object>}*/
-    let warppts = [];
-    /**@type {Number}*/
-    let k = 0;
+    /**@type {Array<Object>}*/ let warppts = [];
+    /**@type {Number}*/ let k = 0;
     grid_x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
     grid_y = b642_to_int12(s.substr(k, k + 2));
     k += 2;
     lines = s[k] === 'B';
     k += 1;
-    /**@type {Number}*/
-    let x = b642_to_int12(s.substr(k, k + 2));
+    /**@type {Number}*/ let x = b642_to_int12(s.substr(k, k + 2));
     k += 2;
-    /**@type {Number}*/
-    let y = b642_to_int12(s.substr(k, k + 2));
+    /**@type {Number}*/ let y = b642_to_int12(s.substr(k, k + 2));
     k += 2;
-    /**@type {Array<Array<Tile>>}*/
-    let tiles = [];
+    /**@type {Array<Array<Tile>>}*/ let tiles = [];
     for(let i = 0; i < x; i++){
       tiles[i] = [];
       for(let j = 0; j < y; j++){
@@ -692,8 +701,7 @@ document.addEventListener("keydown", onKeydown);
       grid_size = 60;
     }
     if(k < s.length){
-      /**@type {Number}*/
-      let n = b642_to_int12(s.substr(k, k + 2));
+      /**@type {Number}*/ let n = b642_to_int12(s.substr(k, k + 2));
       k += 2;
       for(let l = 0; l < n; l++) {
         x = b642_to_int12(s.substr(k, k + 2));
@@ -738,7 +746,6 @@ document.addEventListener("keydown", onKeydown);
         k += 7
       }
       map = maps[b642_to_int12(s.substr(k, k + 2))];
-      k += 2;
     }
     else{
       map = maps[0];
@@ -754,7 +761,7 @@ document.addEventListener("keydown", onKeydown);
     grid_y = Math.floor(window.innerWidth / grid_size);
     grid_y = Math.max(grid_y, 11);
     grid_y = Math.min(grid_y, 19);
-    if(grid_y % 2 == 0){
+    if(grid_y % 2 === 0){
       grid_y--;
     }
     grid_size = Math.ceil(window.innerWidth / grid_y);
@@ -771,14 +778,13 @@ document.addEventListener("keydown", onKeydown);
       pos = new Point(maps[0].start);
       map = maps[0];
     }
+    decorateTiles(new Point(), new Point(map.height(), map.width()));
     draw();
   }
 }
 /**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
-  /**@type {TileMap}*/
-  let newMap = new TileMap();
-  /**@type {Number}*/
-  let area = Math.sqrt(w * h);
+  /**@type {TileMap}*/ let newMap = new TileMap();
+  /**@type {Number}*/ let root_area = Math.sqrt(w * h);
   for(let i = 0; i < h; i++){
     newMap.tiles[i] = [];
     for(let j = 0; j < w; j++){
@@ -787,65 +793,62 @@ document.addEventListener("keydown", onKeydown);
   }
   for(let i = 0; i < h; i++){
     for(let j = 0; j < w; j++){
-      if(Math.random() < 0.3 / area){
+      if(rng() < 0.3 / root_area){
         newMap.insertMapElement(seed, i - 1, j - 1);
       }
     }
   }
-  for(let k = 0; k < Math.floor(area / 2); k++){
+  for(let k = 0; k < Math.floor(root_area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){
-        /**@type {Number}*/
-        let adjacent = 0;
-        if(newMap.tiles[i][j].id == 'water'){
+        /**@type {Number}*/ let adjacent = 0;
+        if(newMap.tiles[i][j].id === 'water'){
           for(let x = i - 1; x <= i + 1; x++){
             for(let y = j - 1; y <= j + 1; y++){
-              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
-                if(newMap.tiles[x][y].id == 'sand'){
+              if(x >= 0 && x < newMap.height() && y >= 0 && y < newMap.width()){
+                if(newMap.tiles[x][y].id === 'sand'){
                   adjacent++;
                 }
               }
             }
           }
         }
-        if(adjacent > 0 && Math.random() < (adjacent - 1) * 0.08){
+        if(adjacent > 0 && rng() < (adjacent - 1) * 0.08){
           newMap.tiles[i][j] = sand;
         }
       }
     }
   }
-  for(let k = 0; k < Math.floor(area / 2); k++){
+  for(let k = 0; k < Math.floor(root_area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){
-        /**@type {Number}*/
-        let adjacent = 0;
-        if(newMap.tiles[i][j].id == 'sand'){
+        /**@type {Number}*/ let adjacent = 0;
+        if(newMap.tiles[i][j].id === 'sand'){
           for(let x = i - 1; x <= i + 1; x++){
             for(let y = j - 1; y <= j + 1; y++){
-              if(x >= 0 && x < newMap.tiles.length && y >= 0 && y < newMap.tiles[0].length){
-                if(newMap.tiles[x][y].id == 'grass'){
+              if(x >= 0 && x < newMap.height() && y >= 0 && y < newMap.width()){
+                if(newMap.tiles[x][y].id === 'grass'){
                   adjacent++;
                 }
-                if(newMap.tiles[x][y].id == 'water'){
+                if(newMap.tiles[x][y].id === 'water'){
                   adjacent -= 3;
                 }
               }
             }
           }
         }
-        if(adjacent > 0 && Math.random() < (adjacent + 1) * 0.08){
+        if(adjacent > 0 && rng() < (adjacent + 1) * 0.08){
           newMap.tiles[i][j] = grass;
         }
       }
     }
   }
-  /**@type {Array<Point>}*/
-  let grasses = [];
+  /**@type {Array<Point>}*/ let grasses = [];
   for(let i = 0; i < h; i++){
     for(let j = 0; j < w; j++){
-      if(newMap.tiles[i][j].id == 'grass'){
-        if(Math.random() < 0.1){
-          if(Math.random() < 0.01){
+      if(newMap.tiles[i][j].id === 'grass'){
+        if(rng() < 0.1){
+          if(rng() < 0.01){
             newMap.tiles[i][j] = grass_big_tree;
           }
           else{
@@ -859,7 +862,7 @@ document.addEventListener("keydown", onKeydown);
       }
     }
   }
-  newMap.start = grasses[Math.floor(Math.random() * grasses.length)];
+  newMap.start = grasses[Math.floor(rng() * grasses.length)];
   newMap.time = 0;
   return newMap;
 }
@@ -881,12 +884,10 @@ interior.set(wood_house_warp, wood_house_map);
 exterior.set(wood_house_warp, new Point(1, 3));
 
 /**@returns {void}*/ function build(/*Tile*/ tile) {
-  if(map != maps[0]){
+  if(map !== maps[0]){
     return;
   }
   pos.round();
-  /**@type {Point}*/
-  let p = facing();
   /**@type {Boolean}*/
   let clear = true;
   /**@type {TileMap}*/
@@ -897,7 +898,7 @@ exterior.set(wood_house_warp, new Point(1, 3));
     case "u":
       for(let i = pos.x - dim.x; i < pos.x; i++){
         for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
-          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+          if(!(i >= 0 && i < map.height() && j >= 0 && j < map.width() && map.tiles[i][j].land)){
             clear = false;
             break;
           }
@@ -922,7 +923,7 @@ exterior.set(wood_house_warp, new Point(1, 3));
     case "d":
       for(let i = pos.x + 1; i < pos.x + dim.x + 1; i++){
         for(let j  = pos.y - Math.floor(dim.y / 2); j < pos.y + Math.ceil(dim.y / 2); j++){
-          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+          if(!(i >= 0 && i < map.height() && j >= 0 && j < map.width() && map.tiles[i][j].land)){
             clear = false;
             break;
           }
@@ -947,7 +948,7 @@ exterior.set(wood_house_warp, new Point(1, 3));
     case "l":
       for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
         for(let j  = pos.y - dim.y; j < pos.y; j++){
-          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+          if(!(i >= 0 && i < map.height() && j >= 0 && j < map.width() && map.tiles[i][j].land)){
             clear = false;
             break;
           }
@@ -972,7 +973,7 @@ exterior.set(wood_house_warp, new Point(1, 3));
     case "r":
       for(let i = pos.x - dim.x + 1; i < pos.x + 1; i++){
         for(let j  = pos.y + 1; j < pos.y + dim.y + 1; j++){
-          if(!(i >= 0 && i < map.tiles.length && j >= 0 && j < map.tiles[0].length && map.tiles[i][j].land)){
+          if(!(i >= 0 && i < map.height() && j >= 0 && j < map.width() && map.tiles[i][j].land)){
             clear = false;
             break;
           }
@@ -996,6 +997,17 @@ exterior.set(wood_house_warp, new Point(1, 3));
       break;
   }
   draw();
+}
+/**@returns {void}*/ function upgrade(/*Tile*/ tile){
+  pos.round();
+  /**@type {Tile}*/ let target = map.getTile(facing());
+  if(map !== maps[0] || !target.warp.enabled){
+    return;
+  }
+  /**@type {Boolean}*/ let clear = true;
+  /**@type {TileMap}*/ let newMap = maps[target.warp.map];
+  /**@type {Point}*/ let dim = exterior.get(tile);
+  //TODO
 }
 
 
@@ -1021,28 +1033,25 @@ for(let i = 0; i < 64; i++){
 }
 
 /**@returns {String}*/ function compress_string(/*String*/ s){
-  if(s[s.length - 1] == s[s.length - 2]){
+  if(s[s.length - 1] === s[s.length - 2]){
     s += '=';
   }
-  /**@type {String}*/
-  let lc = s[0];
-  /**@type {Number}*/
-  let li = 0;
-  /**@type {Boolean}*/
-  let inPar = false;
+  /**@type {String}*/ let lc = s[0];
+  /**@type {Number}*/ let li = 0;
+  /**@type {Boolean}*/ let inPar = false;
   for(let i = 1; i < s.length; i++){
     if(inPar){
-      if(s[i] == ')'){
+      if(s[i] === ')'){
         lc = s[i + 1];
         li = i + 1;
         inPar = false;
       }
       continue;
     }
-    if(s[i] == lc){
+    if(s[i] === lc){
       continue;
     }
-    if(s[i] == '('){
+    if(s[i] === '('){
       inPar = true;
       continue;
     }
@@ -1055,18 +1064,15 @@ for(let i = 0; i < 64; i++){
   return s;
 }
 /**@returns {String}*/ function decompress_string(/*String*/ s){
-  if(s[s.length - 1] == '='){
+  if(s[s.length - 1] === '='){
     s = s.substr(0, s.length - 1);
   }
-  /**@type {Boolean}*/
-  let inPar = false;
-  /**@type {String}*/
-  let num = '';
-  /**@type {Number}*/
-  let li = 0;
+  /**@type {Boolean}*/ let inPar = false;
+  /**@type {String}*/ let num = '';
+  /**@type {Number}*/ let li = 0;
   for(let i = 0; i < s.length; i++){
     if(inPar){
-      if(s[i] == ')'){
+      if(s[i] === ')'){
         return decompress_string(`${s.substr(0, li - 1)}${s[li - 1].repeat(parseInt(num))}${s.substr(i + 1)}`);
       }
       else{
@@ -1074,11 +1080,10 @@ for(let i = 0; i < 64; i++){
       }
       continue;
     }
-    if(s[i] == '('){
+    if(s[i] === '('){
       inPar = true;
       num = '';
       li = i;
-      continue;
     }
   }
   return s;
@@ -1126,7 +1131,7 @@ for(let i = 0; i < 64; i++){
   });
 }
 
-canvas.addEventListener('click', function(event){
+canvas.addEventListener('click', function(){
   simulateKeypress(' ');
 });
 
@@ -1135,7 +1140,6 @@ canvas.addEventListener('click', function(event){
 $(document).on('touchmove', function(e) {
   e.preventDefault();
 });
-
 $(document).on('touchstart', function(e) {
   if (e.target.nodeName !== 'INPUT') {
     e.preventDefault();
