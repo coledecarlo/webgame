@@ -810,11 +810,11 @@ document.addEventListener("keydown", onKeydown);
   alert(newMap);
   alert(newMap.tiles);
   for(let i = 0; i < h; i++){
-    newMap.tiles[i].push([]);
+    newMap.tiles.push([]);
     alert("h1 " + i);
     for(let j = 0; j < w; j++){
       alert("h2 " + i + " " + j);
-      newMap.tiles[i][j].push(water);
+      newMap.tiles[i].push(water);
     }
   }
   alert("g22");
