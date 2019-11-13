@@ -1,5 +1,4 @@
 /**@type {Number}*/ const tiles_version = 16;
-alert("TILE.JS");
 
 
 /**@returns {void}*/ function drawLeaves(/*Number*/ x, /*Number*/ y, /*DecoPart*/ obj){
@@ -70,30 +69,20 @@ alert("TILE.JS");
     -1
   );
 }
-alert("TILE.JS1");
 
 /**@type {Color}*/ const leaf_color        = new Color('#00FF00'); //== 'lime'
-alert("TILE.JS11");
 /**@type {Color}*/ const grass_color       = new Color('#40FF50');
-alert("TILE.JS12");
 /**@type {Color}*/ const wood_color_light  = new Color('#CCAA77');
-alert("TILE.JS13");
 /**@type {Color}*/ const wood_color        = new Color('#A52A2A'); //== 'brown'
-alert("TILE.JS14");
 /**@type {Color}*/ const wood_color_dark   = new Color('#442200');
-alert("TILE.JS15");
 /**@type {Color}*/ const blank_color       = new Color('#000000'); //== 'black'
-alert("TILE.JS16");
 /**@type {Color}*/ const sand_color        = new Color('#EAEA70');
-alert("TILE.JS17");
 /**@type {Color}*/ const water_color       = new Color('#4050FF');
-alert("TILE.JS18");
 /**@type {Color}*/ const exit_arrow_color  = new Color('#FF0000'); //== 'red'
 /**@type {Color}*/ const pearl_color       = new Color('#FFC0CB'); //== 'pink'
 /**@type {Color}*/ const stone_color_light = new Color('#C0C0C0');
 /**@type {Color}*/ const stone_color       = new Color('#909090');
 /**@type {Color}*/ const stone_color_dark  = new Color('#707070');
-alert("TILE.JS2");
 
 /**@type {DecoPart}*/ const leaves      = new DecoPart(drawLeaves    , +2, 0.60, 0.85, leaf_color);
 /**@type {DecoPart}*/ const trunk       = new DecoPart(drawTrunk     , +1, 0.35, 0.85, wood_color);
@@ -101,7 +90,6 @@ alert("TILE.JS2");
 /**@type {DecoPart}*/ const big_trunk   = new DecoPart(trunk .drawFun, +1, 0.60, 1.20, wood_color);
 /**@type {DecoPart}*/ const null_leaves = new DecoPart(leaves.drawFun, -1, 0.00, 0.00, leaf_color);
 /**@type {DecoPart}*/ const null_trunk  = new DecoPart(trunk .drawFun, -1, 0.00, 0.00, wood_color);
-alert("TILE.JS3");
 
 /**@type {Decoration}*/ const rock              = rock_wash(1, new Point(0, 1));
 /**@type {Decoration}*/ const pearl             = pearl_wash(1, new Point(0, 1));
@@ -183,7 +171,6 @@ alert("TILE.JS3");
   ctx.closePath();
 }, -1);
 
-alert("TILES");
 /**@type {Tile}*/ const blank           = new Tile(blank_color, false, 'blank'          , [                                ], false);
 /**@type {Tile}*/ const grass           = new Tile(grass_color, true , 'grass'          , [                                ], false);
 /**@type {Tile}*/ const water           = new Tile(water_color, false, 'water'          , [                                ], false);
