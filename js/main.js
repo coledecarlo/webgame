@@ -615,7 +615,6 @@ document.addEventListener("keydown", onKeydown);
 
 
 /**@returns {void}*/ function board() {
-  alert("board()");
   document.querySelectorAll("button").forEach( function(item) {
     item.addEventListener('focus', function() {
       this.blur();
@@ -779,52 +778,28 @@ document.addEventListener("keydown", onKeydown);
       map = maps[0];
       decorateTiles(new Point(), new Point(map.height(), map.width()));
     }
-    alert("draw()");
     draw();
-    alert("/board()");
   }
   else{
     alert("canvas error");
   }
 }
 /**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
-  alert("g1");
   /**@type {TileMap}*/ let newMap = new TileMap();
   /**@type {Number}*/ let root_area = Math.sqrt(w * h);
-  alert("g2..");
-  alert(newMap);
-  alert(newMap.tiles);
   for(let i = 0; i < h; i++){
     newMap.tiles.push([]);
-    alert("h1 " + i);
     for(let j = 0; j < w; j++){
-      alert("h2 " + i + " " + j);
-
-      try {
-        alert(water.id);
-        alert(water);
-        newMap.tiles[i].push(water);
-      }
-      catch (e) {
-        alert(e.message);
-      }
+      newMap.tiles[i].push(water);
     }
   }
-  alert("g22");
   for(let i = 0; i < h; i++){
-    if(i == 0){
-      alert("g221");
-    }
-    if(i == h - 1){
-      alert("g222");
-    }
     for(let j = 0; j < w; j++){
       if(rng() < 0.3 / root_area){
         newMap.insertMapElement(seed, i - 1, j - 1);
       }
     }
   }
-  alert("g3");
   for(let k = 0; k < Math.floor(root_area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){

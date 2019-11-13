@@ -2,7 +2,6 @@
 
 class Tile{
   constructor(/*Color*/ color, /*Boolean*/ land, /*String*/ id, /*Array?*/ deco, /*Warp | Boolean?*/ warp, /*Tile?*/ mutating){
-    alert("NEWTILE " + id);
     /**@type {Color}*/ this.color = color;
     /**@type {Boolean}*/ this.land = land;
     /**@type {String}*/ this.id = id;
@@ -22,20 +21,16 @@ class Tile{
 class Color{
   constructor(/*Number | String*/ r, /*Number?*/ g, /*Number?*/ b, /*Number?*/ a){
     if(arguments.length === 1){
-      alert("c1");
-      /**@type {OffscreenCanvasRenderingContext2D}*/ let con = new OffscreenCanvas(1, 1).getContext('2d');
-      alert("c2");
+      ///**@type {OffscreenCanvasRenderingContext2D}*/ let con = new OffscreenCanvas(1, 1).getContext('2d');
+      /**@type {HTMLCanvasElement}*/ let can = document.createElement("canvas");
+      /**@type {CanvasRenderingContext2D}*/ let con = can.getContext("2d");
       con.fillStyle = /**@type {String}*/ r;
-      alert("c3");
       con.fillRect(0, 0, 1, 1);
-      alert("c4");
       /**@type {ImageData}*/ let img = con.getImageData(0, 0, 1, 1);
-      alert("c5");
       r = img.data[0];
       g = img.data[1];
       b = img.data[2];
       a = img.data[3];
-      alert("c6");
     }
     /**@type {Number}*/ this.r = r;
     /**@type {Number}*/ this.g = g;
