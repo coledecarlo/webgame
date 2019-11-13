@@ -780,8 +780,12 @@ document.addEventListener("keydown", onKeydown);
     ctx = canvas.getContext('2d');
     alert(".3");
     if(!init) {
+      alert("tst");
+      [].push(1);
       alert(".4");
-      maps.push(generateMap(100, 100));
+      let a = generateMap(100, 100);
+      alert(".41");
+      maps.push(a);
       alert(".5");
       pos = new Point(maps[0].start);
       alert(".6");
