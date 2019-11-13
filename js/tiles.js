@@ -73,13 +73,21 @@ alert("TILE.JS");
 alert("TILE.JS1");
 
 /**@type {Color}*/ const leaf_color        = new Color('#00FF00'); //== 'lime'
+alert("TILE.JS11");
 /**@type {Color}*/ const grass_color       = new Color('#40FF50');
+alert("TILE.JS12");
 /**@type {Color}*/ const wood_color_light  = new Color('#CCAA77');
+alert("TILE.JS13");
 /**@type {Color}*/ const wood_color        = new Color('#A52A2A'); //== 'brown'
+alert("TILE.JS14");
 /**@type {Color}*/ const wood_color_dark   = new Color('#442200');
+alert("TILE.JS15");
 /**@type {Color}*/ const blank_color       = new Color('#000000'); //== 'black'
+alert("TILE.JS16");
 /**@type {Color}*/ const sand_color        = new Color('#EAEA70');
+alert("TILE.JS17");
 /**@type {Color}*/ const water_color       = new Color('#4050FF');
+alert("TILE.JS18");
 /**@type {Color}*/ const exit_arrow_color  = new Color('#FF0000'); //== 'red'
 /**@type {Color}*/ const pearl_color       = new Color('#FFC0CB'); //== 'pink'
 /**@type {Color}*/ const stone_color_light = new Color('#C0C0C0');
