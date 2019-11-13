@@ -780,7 +780,7 @@ document.addEventListener("keydown", onKeydown);
     ctx = canvas.getContext('2d');
     alert(".3");
     if(!init) {
-      alert("tst");
+      alert(rng());
       [].push(1);
       alert(".4");
       let a = generateMap(100, 100);
@@ -803,8 +803,10 @@ document.addEventListener("keydown", onKeydown);
   }
 }
 /**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
+  alert("g1");
   /**@type {TileMap}*/ let newMap = new TileMap();
   /**@type {Number}*/ let root_area = Math.sqrt(w * h);
+  alert("g2");
   for(let i = 0; i < h; i++){
     newMap.tiles[i] = [];
     for(let j = 0; j < w; j++){
@@ -818,6 +820,7 @@ document.addEventListener("keydown", onKeydown);
       }
     }
   }
+  alert("g3");
   for(let k = 0; k < Math.floor(root_area / 2); k++){
     for(let i = 0; i < h; i++){
       for(let j = 0; j < w; j++){
