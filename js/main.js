@@ -766,33 +766,18 @@ document.addEventListener("keydown", onKeydown);
     }
     grid_size = Math.ceil(window.innerWidth / grid_y);
     grid_x = Math.floor((window.innerHeight - 128) / grid_size);
-    alert(grid_x);
   }
-  alert("calculate()");
   calculate();
-  alert("/calculate(..)");
   heightField.value = /**@type {String}*/ grid_x;
   widthField.value = /**@type {String}*/ grid_y;
   gridField.value = /**@type {String}*/ grid_size;
-  alert(".1");
   if (canvas.getContext) {
-    alert(".2");
     ctx = canvas.getContext('2d');
-    alert(".3");
     if(!init) {
-      alert(rng());
-      [].push(1);
-      alert(".4");
-      let a = generateMap(100, 100);
-      alert(".41");
-      maps.push(a);
-      alert(".5");
+      maps.push(generateMap(100, 100));
       pos = new Point(maps[0].start);
-      alert(".6");
       map = maps[0];
-      alert("deco()");
       decorateTiles(new Point(), new Point(map.height(), map.width()));
-      alert("/deco()");
     }
     alert("draw()");
     draw();

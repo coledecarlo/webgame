@@ -70,6 +70,7 @@ alert("TILE.JS");
     -1
   );
 }
+alert("TILE.JS1");
 
 /**@type {Color}*/ const leaf_color        = new Color('#00FF00'); //== 'lime'
 /**@type {Color}*/ const grass_color       = new Color('#40FF50');
@@ -84,6 +85,7 @@ alert("TILE.JS");
 /**@type {Color}*/ const stone_color_light = new Color('#C0C0C0');
 /**@type {Color}*/ const stone_color       = new Color('#909090');
 /**@type {Color}*/ const stone_color_dark  = new Color('#707070');
+alert("TILE.JS2");
 
 /**@type {DecoPart}*/ const leaves      = new DecoPart(drawLeaves    , +2, 0.60, 0.85, leaf_color);
 /**@type {DecoPart}*/ const trunk       = new DecoPart(drawTrunk     , +1, 0.35, 0.85, wood_color);
@@ -91,6 +93,7 @@ alert("TILE.JS");
 /**@type {DecoPart}*/ const big_trunk   = new DecoPart(trunk .drawFun, +1, 0.60, 1.20, wood_color);
 /**@type {DecoPart}*/ const null_leaves = new DecoPart(leaves.drawFun, -1, 0.00, 0.00, leaf_color);
 /**@type {DecoPart}*/ const null_trunk  = new DecoPart(trunk .drawFun, -1, 0.00, 0.00, wood_color);
+alert("TILE.JS3");
 
 /**@type {Decoration}*/ const rock              = rock_wash(1, new Point(0, 1));
 /**@type {Decoration}*/ const pearl             = pearl_wash(1, new Point(0, 1));
