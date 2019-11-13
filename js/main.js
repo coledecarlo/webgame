@@ -814,7 +814,13 @@ document.addEventListener("keydown", onKeydown);
     alert("h1 " + i);
     for(let j = 0; j < w; j++){
       alert("h2 " + i + " " + j);
-      newMap.tiles[i].push(water);
+      alert(water.id);
+      try {
+        newMap.tiles[i].push(water);
+      }
+      catch (e) {
+        alert(e.message);
+      }
     }
   }
   alert("g22");
