@@ -770,15 +770,21 @@ document.addEventListener("keydown", onKeydown);
   }
   alert("calculate()");
   calculate();
-  alert("/calculate(.)");
+  alert("/calculate(..)");
   heightField.value = /**@type {String}*/ grid_x;
   widthField.value = /**@type {String}*/ grid_y;
   gridField.value = /**@type {String}*/ grid_size;
+  alert(".1");
   if (canvas.getContext) {
+    alert(".2");
     ctx = canvas.getContext('2d');
+    alert(".3");
     if(!init) {
+      alert(".4");
       maps.push(generateMap(100, 100));
+      alert(".5");
       pos = new Point(maps[0].start);
+      alert(".6");
       map = maps[0];
       alert("deco()");
       decorateTiles(new Point(), new Point(map.height(), map.width()));
