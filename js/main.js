@@ -1,4 +1,4 @@
-/**@type {Number}*/ const version = 15;
+/**@type {Number}*/ const version = 16;
 
 
 /**@type {Array<TileMap>}*/ let maps = [];
@@ -770,6 +770,7 @@ document.addEventListener("keydown", onKeydown);
   }
   alert("calculate()");
   calculate();
+  alert("/calculate()");
   heightField.value = /**@type {String}*/ grid_x;
   widthField.value = /**@type {String}*/ grid_y;
   gridField.value = /**@type {String}*/ grid_size;

@@ -1,4 +1,4 @@
-/**@type {Number}*/ const classes_version = 15;
+/**@type {Number}*/ const classes_version = 16;
 
 class Tile{
   constructor(/*Color*/ color, /*Boolean*/ land, /*String*/ id, /*Array?*/ deco, /*Warp | Boolean?*/ warp, /*Tile?*/ mutating){

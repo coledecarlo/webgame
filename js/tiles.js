@@ -1,4 +1,4 @@
-/**@type {Number}*/ const tiles_version = 15;
+/**@type {Number}*/ const tiles_version = 16;
 
 
 /**@returns {void}*/ function drawLeaves(/*Number*/ x, /*Number*/ y, /*DecoPart*/ obj){
