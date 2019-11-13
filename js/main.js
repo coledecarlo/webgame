@@ -806,14 +806,27 @@ document.addEventListener("keydown", onKeydown);
   alert("g1");
   /**@type {TileMap}*/ let newMap = new TileMap();
   /**@type {Number}*/ let root_area = Math.sqrt(w * h);
-  alert("g2");
+  alert("g2.");
   for(let i = 0; i < h; i++){
     newMap.tiles[i] = [];
+    if(i == 0){
+      alert("g211");
+    }
+    if(i == h - 1){
+      alert("g212");
+    }
     for(let j = 0; j < w; j++){
       newMap.tiles[i][j] = water;
     }
   }
+  alert("g22");
   for(let i = 0; i < h; i++){
+    if(i == 0){
+      alert("g221");
+    }
+    if(i == h - 1){
+      alert("g222");
+    }
     for(let j = 0; j < w; j++){
       if(rng() < 0.3 / root_area){
         newMap.insertMapElement(seed, i - 1, j - 1);
