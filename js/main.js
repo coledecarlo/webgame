@@ -770,7 +770,7 @@ document.addEventListener("keydown", onKeydown);
   }
   alert("calculate()");
   calculate();
-  alert("/calculate()");
+  alert("/calculate(.)");
   heightField.value = /**@type {String}*/ grid_x;
   widthField.value = /**@type {String}*/ grid_y;
   gridField.value = /**@type {String}*/ grid_size;
@@ -780,11 +780,16 @@ document.addEventListener("keydown", onKeydown);
       maps.push(generateMap(100, 100));
       pos = new Point(maps[0].start);
       map = maps[0];
+      alert("deco()");
       decorateTiles(new Point(), new Point(map.height(), map.width()));
+      alert("/deco()");
     }
     alert("draw()");
     draw();
     alert("/board()");
+  }
+  else{
+    alert("canvas error");
   }
 }
 /**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
