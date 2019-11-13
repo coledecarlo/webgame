@@ -781,8 +781,9 @@ document.addEventListener("keydown", onKeydown);
       map = maps[0];
       decorateTiles(new Point(), new Point(map.height(), map.width()));
     }
-
+    alert("draw()");
     draw();
+    alert("/board()");
   }
 }
 /**@returns {TileMap}*/ function generateMap(/*Number*/ h, /*Number*/ w){
