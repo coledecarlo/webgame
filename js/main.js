@@ -615,6 +615,7 @@ document.addEventListener("keydown", onKeydown);
 
 
 /**@returns {void}*/ function board() {
+  alert("board()");
   document.querySelectorAll("button").forEach( function(item) {
     item.addEventListener('focus', function() {
       this.blur();
@@ -693,6 +694,8 @@ document.addEventListener("keydown", onKeydown);
       maps[0].time = 0;
       rocks = 0;
     }
+    map = maps[0];
+    decorateTiles(new Point(), new Point(map.height(), map.width()));
     if(k < s.length){
       grid_size = b642_to_int12(s.substr(k, k + 2));
       k += 2;
@@ -747,9 +750,6 @@ document.addEventListener("keydown", onKeydown);
       }
       map = maps[b642_to_int12(s.substr(k, k + 2))];
     }
-    else{
-      map = maps[0];
-    }
   }
   if(is_mobile()){
     grid_x = 19;
@@ -766,19 +766,22 @@ document.addEventListener("keydown", onKeydown);
     }
     grid_size = Math.ceil(window.innerWidth / grid_y);
     grid_x = Math.floor((window.innerHeight - 128) / grid_size);
+    alert(grid_x);
   }
+  alert("calculate()");
   calculate();
-  heightField.value = grid_x;
-  widthField.value = grid_y;
-  gridField.value = grid_size;
+  heightField.value = /**@type {String}*/ grid_x;
+  widthField.value = /**@type {String}*/ grid_y;
+  gridField.value = /**@type {String}*/ grid_size;
   if (canvas.getContext) {
     ctx = canvas.getContext('2d');
     if(!init) {
       maps.push(generateMap(100, 100));
       pos = new Point(maps[0].start);
       map = maps[0];
+      decorateTiles(new Point(), new Point(map.height(), map.width()));
     }
-    decorateTiles(new Point(), new Point(map.height(), map.width()));
+
     draw();
   }
 }
