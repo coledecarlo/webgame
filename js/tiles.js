@@ -171,6 +171,7 @@
   ctx.closePath();
 }, -1);
 
+alert("TILES");
 /**@type {Tile}*/ const blank           = new Tile(blank_color, false, 'blank'          , [                                ], false);
 /**@type {Tile}*/ const grass           = new Tile(grass_color, true , 'grass'          , [                                ], false);
 /**@type {Tile}*/ const water           = new Tile(water_color, false, 'water'          , [                                ], false);

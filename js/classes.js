@@ -2,6 +2,7 @@
 
 class Tile{
   constructor(/*Color*/ color, /*Boolean*/ land, /*String*/ id, /*Array?*/ deco, /*Warp | Boolean?*/ warp, /*Tile?*/ mutating){
+    alert("NEWTILE " + id);
     /**@type {Color}*/ this.color = color;
     /**@type {Boolean}*/ this.land = land;
     /**@type {String}*/ this.id = id;

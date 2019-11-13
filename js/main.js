@@ -806,7 +806,7 @@ document.addEventListener("keydown", onKeydown);
   alert("g1");
   /**@type {TileMap}*/ let newMap = new TileMap();
   /**@type {Number}*/ let root_area = Math.sqrt(w * h);
-  alert("g2.");
+  alert("g2..");
   alert(newMap);
   alert(newMap.tiles);
   for(let i = 0; i < h; i++){
